@@ -3567,3 +3567,43 @@ msgstr "你的用户可能已创建？请尝试重新登录或刷新应用。"
 #: components/modal/modals/EditCategory.tsx
 msgid "New name"
 msgstr "新名称"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Add Emoji"
+msgstr "添加表情符号"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Select an image"
+msgstr "选择图片"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "GIFs are uploaded as-is, without cropping."
+msgstr "GIF 将按原样上传，不做裁剪。"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Drag the image to adjust its position"
+msgstr "拖动图片调整位置"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Preview"
+msgstr "预览"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Upload to"
+msgstr "上传至"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Choose a different image"
+msgstr "更换图片"
+
+#: components/app/interface/settings/server/emojis/EmojiList.tsx
+msgid "Upload Emoji"
+msgstr "上传表情符号"
+
+#: components/i18n/errors.tsx
+msgid "This file is too large, the maximum size is {0} KB."
+msgstr "文件过大，最大允许 {0} KB。"
+
+#: components/i18n/errors.tsx
+msgid "This file is too small or empty."
+msgstr "文件过小或为空。"

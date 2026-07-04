@@ -72,6 +72,11 @@ export type Modals =
       server: Server;
     }
   | {
+      type: "create_emoji";
+      client: Client;
+      server?: Server;
+    }
+  | {
       type: "create_channel";
       server: Server;
       cb?: (channel: Channel) => void;

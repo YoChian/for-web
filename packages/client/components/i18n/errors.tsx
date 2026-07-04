@@ -139,10 +139,16 @@ export function useError() {
           return t`This account is not activated! Please check your account's inbox and try again.`;
         case "TotpAlreadyEnabled":
           return t`Multi-factor authentication is already enabled for this account.`;
+        case "FileTooLarge": {
+          const max = (err as { max?: number }).max;
+          return t`This file is too large, the maximum size is ${
+            max ? Math.round(max / 1024) : "?"
+          } KB.`;
+        }
+        case "FileTooSmall":
+          return t`This file is too small or empty.`;
 
         // unreachable errors (in theory)
-        case "FileTooLarge":
-        case "FileTooSmall":
         case "InvalidFlagValue":
         case "InvalidOperation":
         case "InvalidProperty":

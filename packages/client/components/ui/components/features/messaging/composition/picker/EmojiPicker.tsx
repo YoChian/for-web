@@ -16,7 +16,15 @@ import { useClient } from "@revolt/client";
 import { UnicodeEmoji } from "@revolt/markdown/emoji";
 import { UNICODE_EMOJI_PACK_PUA } from "@revolt/markdown/emoji/UnicodeEmoji";
 import { useState } from "@revolt/state";
-import { Avatar, Ripple, TextField } from "@revolt/ui/components/design";
+import MdAdd from "@material-design-icons/svg/outlined/add.svg?component-solid";
+
+import { useModals } from "@revolt/modal";
+import {
+  Avatar,
+  IconButton,
+  Ripple,
+  TextField,
+} from "@revolt/ui/components/design";
 import { Row } from "@revolt/ui/components/layout";
 
 import emojiMapping from "../../../../../emojiMapping.json";
@@ -67,6 +75,7 @@ const COLUMNS = 9;
 
 export function EmojiPicker() {
   const client = useClient();
+  const { openModal } = useModals();
   const { ordering } = useState();
 
   const [filter, setFilter] = createSignal("");
@@ -139,18 +148,27 @@ export function EmojiPicker() {
 
   return (
     <Stack>
-      <TextField
-        autoFocus
-        variant="outlined"
-        placeholder="Search for emojis..."
-        value={filter()}
-        onMouseDown={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-        }}
-        onInput={(e) => setFilter(e.currentTarget.value)}
-      />
+      <Row align gap="sm">
+        <TextField
+          autoFocus
+          variant="outlined"
+          placeholder="Search for emojis..."
+          value={filter()}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+          }}
+          onInput={(e) => setFilter(e.currentTarget.value)}
+        />
+        <IconButton
+          onPress={() =>
+            openModal({ type: "create_emoji", client: client() })
+          }
+        >
+          <MdAdd />
+        </IconButton>
+      </Row>
       <Row gap={"none"} class={compositionContent()}>
         <div
           ref={serverScrollTargetElement}

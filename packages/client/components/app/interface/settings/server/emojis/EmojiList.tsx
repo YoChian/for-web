@@ -1,124 +1,43 @@
-import { createFormControl, createFormGroup } from "solid-forms";
-import { For, Match, Switch } from "solid-js";
+import { For } from "solid-js";
 
-import { Trans, useLingui } from "@lingui-solid/solid/macro";
+import { Trans } from "@lingui-solid/solid/macro";
 import { Server } from "stoat.js";
 import { css } from "styled-system/css";
 
 import { useClient } from "@revolt/client";
 import { CONFIGURATION } from "@revolt/common";
-import { useError } from "@revolt/i18n";
 import { useModals } from "@revolt/modal";
-import {
-  Avatar,
-  CategoryButton,
-  CircularProgress,
-  Column,
-  Form2,
-  Row,
-  Text,
-} from "@revolt/ui";
+import { Avatar, Button, CategoryButton, Column, Row, Text } from "@revolt/ui";
 
 /**
  * Emoji list
  */
 export function EmojiList(props: { server: Server }) {
-  const err = useError();
-  const { t } = useLingui();
   const client = useClient();
   const { openModal } = useModals();
 
-  function isDisabled() {
-    return props.server.emojis.length >= CONFIGURATION.MAX_EMOJI;
-  }
-
-  const editGroup = createFormGroup(
-    {
-      name: createFormControl("", { required: true }),
-      file: createFormControl<string | File[] | null>(null, {
-        required: true,
-      }),
-    },
-    {
-      disabled: isDisabled(),
-    },
-  );
-
-  async function onSubmit() {
-    const body = new FormData();
-    body.append("file", editGroup.controls.file.value![0]);
-
-    const [key, value] = client().authenticationHeader;
-    const data: { id: string } = await fetch(
-      `${CONFIGURATION.DEFAULT_MEDIA_URL}/emojis`,
-      {
-        method: "POST",
-        body,
-        headers: {
-          [key]: value,
-        },
-      },
-    ).then((res) => res.json());
-
-    await props.server.createEmoji(data.id, {
-      name: editGroup.controls.name.value,
-    });
-  }
-
-  function onReset() {
-    editGroup.controls.name.setValue("");
-    editGroup.controls.file.setValue(null);
-  }
-
-  const submit = Form2.useSubmitHandler(editGroup, onSubmit, onReset);
+  const slotsRemaining = () =>
+    CONFIGURATION.MAX_EMOJI - props.server.emojis.length;
 
   return (
     <Column gap="lg">
-      <form onSubmit={submit}>
-        <Column>
-          <Row align>
-            <Column>
-              <Form2.FileInput
-                control={editGroup.controls.file}
-                accept="image/*"
-                imageJustify={false}
-                allowRemoval={false}
-              />
-            </Column>
-            <Column grow>
-              <Form2.TextField
-                minlength={1}
-                maxlength={32}
-                counter
-                name="name"
-                control={editGroup.controls.name}
-                label={t`Emoji Name`}
-              />
-
-              <Row align>
-                <Form2.Submit group={editGroup}>
-                  <Trans>Create</Trans>
-                </Form2.Submit>
-                <Switch
-                  fallback={
-                    <Trans>
-                      {CONFIGURATION.MAX_EMOJI - props.server.emojis.length}{" "}
-                      emoji slots remaining
-                    </Trans>
-                  }
-                >
-                  <Match when={editGroup.errors?.error}>
-                    {err(editGroup.errors!.error)}
-                  </Match>
-                  <Match when={editGroup.isPending}>
-                    <CircularProgress />
-                  </Match>
-                </Switch>
-              </Row>
-            </Column>
-          </Row>
-        </Column>
-      </form>
+      <Row align>
+        <Button
+          onPress={() =>
+            openModal({
+              type: "create_emoji",
+              client: client(),
+              server: props.server,
+            })
+          }
+          isDisabled={slotsRemaining() <= 0}
+        >
+          <Trans>Upload Emoji</Trans>
+        </Button>
+        <Text class="label">
+          <Trans>{slotsRemaining()} emoji slots remaining</Trans>
+        </Text>
+      </Row>
 
       <Column gap="sm">
         <For

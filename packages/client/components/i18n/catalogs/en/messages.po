@@ -3617,3 +3617,43 @@ msgstr "Your role ranking is too low to take this action."
 #: components/i18n/errors.tsx
 msgid "Your user has already been created? Try logging in again or refreshing the app."
 msgstr "Your user has already been created? Try logging in again or refreshing the app."
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Add Emoji"
+msgstr "Add Emoji"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Select an image"
+msgstr "Select an image"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "GIFs are uploaded as-is, without cropping."
+msgstr "GIFs are uploaded as-is, without cropping."
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Drag the image to adjust its position"
+msgstr "Drag the image to adjust its position"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Preview"
+msgstr "Preview"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Upload to"
+msgstr "Upload to"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Choose a different image"
+msgstr "Choose a different image"
+
+#: components/app/interface/settings/server/emojis/EmojiList.tsx
+msgid "Upload Emoji"
+msgstr "Upload Emoji"
+
+#: components/i18n/errors.tsx
+msgid "This file is too large, the maximum size is {0} KB."
+msgstr "This file is too large, the maximum size is {0} KB."
+
+#: components/i18n/errors.tsx
+msgid "This file is too small or empty."
+msgstr "This file is too small or empty."

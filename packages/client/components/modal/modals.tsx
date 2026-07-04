@@ -14,6 +14,7 @@ import { ChannelToggleMatureModal } from "./modals/ChannelToggleMature";
 import { CreateBotModal } from "./modals/CreateBot";
 import { CreateCategoryModal } from "./modals/CreateCategory";
 import { CreateChannelModal } from "./modals/CreateChannel";
+import { CreateEmojiModal } from "./modals/CreateEmoji";
 import { CreateGroupModal } from "./modals/CreateGroup";
 import { CreateGroupOrServer } from "./modals/CreateGroupOrServer";
 import { CreateInviteModal } from "./modals/CreateInvite";
@@ -98,6 +99,8 @@ export function RenderModal(props: ActiveModal & { onClose: () => void }) {
       return <CreateBotModal {...modalProps} />;
     case "create_category":
       return <CreateCategoryModal {...modalProps} />;
+    case "create_emoji":
+      return <CreateEmojiModal {...modalProps} />;
     case "create_channel":
       return <CreateChannelModal {...modalProps} />;
     case "create_group":
