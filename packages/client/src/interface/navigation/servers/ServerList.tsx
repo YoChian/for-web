@@ -131,6 +131,7 @@ export const ServerList = (props: Props) => {
           }}
         >
           <Avatar
+            shape="rounded-square"
             size={42}
             fallback={<MdHome />}
             holepunch={homeNotifications() ? "top-right" : undefined}
@@ -158,6 +159,7 @@ export const ServerList = (props: Props) => {
         >
           <a ref={setMenuButton} class={entryContainer()}>
             <Avatar
+              shape="rounded-square"
               size={42}
               src={props.user.avatarURL}
               holepunch={"bottom-right"}
@@ -176,6 +178,7 @@ export const ServerList = (props: Props) => {
                 href={`/channel/${conversation.id}`}
               >
                 <Avatar
+                  shape="rounded-square"
                   size={42}
                   // TODO: fix this
                   src={conversation.iconURL}
@@ -202,6 +205,7 @@ export const ServerList = (props: Props) => {
         <Show when={props.unreadConversations.length > 9}>
           <a class={entryContainer()} href={`/`}>
             <Avatar
+              shape="rounded-square"
               size={42}
               fallback={<>+{props.unreadConversations.length - 9}</>}
             />
@@ -263,6 +267,7 @@ export const ServerList = (props: Props) => {
               >
                 <a href={state.layout.getLastActiveServerPath(entry.item.id)}>
                   <Avatar
+                    shape="rounded-square"
                     size={42}
                     src={entry.item.iconURL}
                     holepunch={
@@ -296,7 +301,7 @@ export const ServerList = (props: Props) => {
             class={entryContainer()}
             onClick={() => props.onCreateOrJoinServer()}
           >
-            <Avatar size={42} fallback={<MdAdd />} />
+            <Avatar shape="rounded-square" size={42} fallback={<MdAdd />} />
           </a>
         </Tooltip>
         <Show when={CONFIGURATION.IS_STOAT}>
@@ -305,7 +310,7 @@ export const ServerList = (props: Props) => {
               href={state.layout.getLastActiveDiscoverPath()}
               class={entryContainer()}
             >
-              <Avatar size={42} fallback={<MdExplore />} />
+              <Avatar shape="rounded-square" size={42} fallback={<MdExplore />} />
             </a>
           </Tooltip>
         </Show>
@@ -318,7 +323,7 @@ export const ServerList = (props: Props) => {
           class={entryContainer()}
           onClick={() => openModal({ type: "settings", config: "user" })}
         >
-          <Avatar size={42} fallback={<MdSettings />} interactive />
+          <Avatar shape="rounded-square" size={42} fallback={<MdSettings />} interactive />
         </a>
       </Tooltip>
     </ServerListBase>

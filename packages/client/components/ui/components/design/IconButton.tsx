@@ -135,7 +135,7 @@ const iconButton2 = cva({
     },
     shape: {
       round: {
-        borderRadius: "var(--borderRadius-full)",
+        borderRadius: "var(--borderRadius-lg)",
       },
       square: {},
     },
