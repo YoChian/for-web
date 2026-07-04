@@ -3563,3 +3563,7 @@ msgstr "你的身份组等级太低，无法执行此操作。"
 #: components/i18n/errors.tsx
 msgid "Your user has already been created? Try logging in again or refreshing the app."
 msgstr "你的用户可能已创建？请尝试重新登录或刷新应用。"
+
+#: components/modal/modals/EditCategory.tsx
+msgid "New name"
+msgstr "新名称"
