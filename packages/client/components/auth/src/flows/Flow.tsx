@@ -22,7 +22,7 @@ export const FlowBase = styled("div", {
     maxWidth: "360px",
     maxHeight: "600px",
     padding: "45px 40px",
-    borderRadius: "32px",
+    borderRadius: "var(--borderRadius-xl)",
     marginTop: "20px",
     marginBottom: "20px",
     justifySelf: "center",

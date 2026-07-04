@@ -183,7 +183,7 @@ const Container = styled("div", {
     padding: "24px",
     minWidth: "280px",
     maxWidth: "560px",
-    borderRadius: "28px",
+    borderRadius: "var(--borderRadius-xl)",
 
     display: "flex",
     flexDirection: "column",

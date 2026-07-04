@@ -62,17 +62,18 @@ function reduceWithPrefix(object: Record<string, string>, prefix: string) {
 
 const themeConstants = {
   borderRadius: {
-    // Material 3 Expressive ten-level shape scale
-    // https://m3.material.io/styles/shape/corner-radius-scale
+    // Flattened Discord-like shape scale (fork customization)
+    // Replaces the Material 3 Expressive ten-level scale to tone down
+    // the oversized rounded corners while keeping the size hierarchy.
     none: "0px",
-    xs: "4px",
-    sm: "8px",
-    md: "12px",
-    lg: "16px",
-    li: "20px",
-    xl: "28px",
-    xli: "32px",
-    xxl: "48px",
+    xs: "3px",
+    sm: "4px",
+    md: "6px",
+    lg: "8px",
+    li: "10px",
+    xl: "12px",
+    xli: "14px",
+    xxl: "16px",
     full: "calc(infinity * 1px)",
     circle: "100%",
   },

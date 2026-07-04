@@ -264,7 +264,7 @@ const button = cva({
      */
     shape: {
       round: {
-        borderRadius: "var(--borderRadius-full)",
+        borderRadius: "var(--borderRadius-lg)",
       },
       square: {},
     },
@@ -320,7 +320,7 @@ const button = cva({
       small: {
         height: "40px",
         paddingInline: "16px",
-        borderRadius: "12px",
+        borderRadius: "var(--borderRadius-md)",
 
         ...typography.raw(),
       },
@@ -424,26 +424,27 @@ const button = cva({
       },
     },
 
-    // hard-code values for rounded connected group shapes
+    // fork customization: flattened Discord-like shapes — rounded pill
+    // sizes and asymmetric "connected" morphs collapse to the token scale
     {
       shape: "round",
       size: ["sm", "xs"],
       css: {
-        borderRadius: "48px",
+        borderRadius: "var(--borderRadius-md)",
       },
     },
     {
       shape: "round",
       size: ["md"],
       css: {
-        borderRadius: "64px",
+        borderRadius: "var(--borderRadius-lg)",
       },
     },
     {
       shape: "round",
       size: ["xl", "lg"],
       css: {
-        borderRadius: "160px",
+        borderRadius: "var(--borderRadius-xl)",
       },
     },
 
@@ -453,7 +454,7 @@ const button = cva({
       size: ["sm", "xs"],
       group: "connected-start",
       css: {
-        borderRadius: "48px var(--borderRadius-md) var(--borderRadius-md) 48px",
+        borderRadius: "var(--borderRadius-md)",
       },
     },
     {
@@ -461,7 +462,7 @@ const button = cva({
       size: "md",
       group: "connected-start",
       css: {
-        borderRadius: "64px var(--borderRadius-lg) var(--borderRadius-lg) 64px",
+        borderRadius: "var(--borderRadius-lg)",
       },
     },
     {
@@ -469,8 +470,7 @@ const button = cva({
       size: ["xl", "lg"],
       group: "connected-start",
       css: {
-        borderRadius:
-          "160px var(--borderRadius-xl) var(--borderRadius-xl) 160px",
+        borderRadius: "var(--borderRadius-xl)",
       },
     },
 
@@ -480,7 +480,7 @@ const button = cva({
       size: ["sm", "xs"],
       group: "connected-end",
       css: {
-        borderRadius: "var(--borderRadius-md) 48px 48px var(--borderRadius-md)",
+        borderRadius: "var(--borderRadius-md)",
       },
     },
     {
@@ -488,7 +488,7 @@ const button = cva({
       size: "md",
       group: "connected-end",
       css: {
-        borderRadius: "var(--borderRadius-lg) 64px 64px var(--borderRadius-lg)",
+        borderRadius: "var(--borderRadius-lg)",
       },
     },
     {
@@ -496,8 +496,7 @@ const button = cva({
       size: ["xl", "lg"],
       group: "connected-end",
       css: {
-        borderRadius:
-          "var(--borderRadius-xl) 160px 160px var(--borderRadius-xl)",
+        borderRadius: "var(--borderRadius-xl)",
       },
     },
 
