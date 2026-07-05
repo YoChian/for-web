@@ -21,6 +21,8 @@ import { styled } from "styled-system/jsx";
 import { Button } from "@revolt/ui/components/design";
 import { Row } from "@revolt/ui/components/layout";
 
+import { Server } from "stoat.js";
+
 import { EmojiPicker } from "./EmojiPicker";
 import { GifPicker } from "./GifPicker";
 
@@ -46,6 +48,11 @@ interface Props {
    * Text replacement
    */
   onTextReplacement: (node: string) => void;
+
+  /**
+   * Server this composition belongs to, if any
+   */
+  server?: Server;
 }
 
 export const CompositionMediaPickerContext = createContext(
@@ -95,6 +102,7 @@ export function CompositionMediaPicker(props: Props) {
                 setShow={setShow}
                 onMessage={props.onMessage}
                 onTextReplacement={props.onTextReplacement}
+                server={props.server}
               />
             </Motion>
           </Portal>
@@ -105,7 +113,7 @@ export function CompositionMediaPicker(props: Props) {
 }
 
 function Picker(
-  props: Pick<Props, "onMessage" | "onTextReplacement"> & {
+  props: Pick<Props, "onMessage" | "onTextReplacement" | "server"> & {
     anchor: Accessor<HTMLElement | undefined>;
     show: Accessor<"gif" | "emoji" | undefined>;
     setShow: Setter<"gif" | "emoji" | undefined>;
@@ -176,7 +184,7 @@ function Picker(
             <GifPicker />
           </Match>
           <Match when={props.show() === "emoji"}>
-            <EmojiPicker />
+            <EmojiPicker server={props.server} />
           </Match>
         </Switch>
       </Container>

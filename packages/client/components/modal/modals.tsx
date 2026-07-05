@@ -15,6 +15,7 @@ import { CreateBotModal } from "./modals/CreateBot";
 import { CreateCategoryModal } from "./modals/CreateCategory";
 import { CreateChannelModal } from "./modals/CreateChannel";
 import { CreateEmojiModal } from "./modals/CreateEmoji";
+import { DeleteEmojiModal } from "./modals/DeleteEmoji";
 import { CreateGroupModal } from "./modals/CreateGroup";
 import { CreateGroupOrServer } from "./modals/CreateGroupOrServer";
 import { CreateInviteModal } from "./modals/CreateInvite";
@@ -101,6 +102,8 @@ export function RenderModal(props: ActiveModal & { onClose: () => void }) {
       return <CreateCategoryModal {...modalProps} />;
     case "create_emoji":
       return <CreateEmojiModal {...modalProps} />;
+    case "delete_emoji":
+      return <DeleteEmojiModal {...modalProps} />;
     case "create_channel":
       return <CreateChannelModal {...modalProps} />;
     case "create_group":

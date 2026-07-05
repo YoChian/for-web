@@ -10,6 +10,10 @@ import {
 } from "solid-js";
 
 import { Trans, useLingui } from "@lingui-solid/solid/macro";
+import MdFlip from "@material-design-icons/svg/outlined/flip.svg?component-solid";
+import MdRestartAlt from "@material-design-icons/svg/outlined/restart_alt.svg?component-solid";
+import MdZoomIn from "@material-design-icons/svg/outlined/zoom_in.svg?component-solid";
+import MdZoomOut from "@material-design-icons/svg/outlined/zoom_out.svg?component-solid";
 import { Server } from "stoat.js";
 import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
@@ -17,11 +21,11 @@ import { styled } from "styled-system/jsx";
 import { CONFIGURATION } from "@revolt/common";
 import { useError } from "@revolt/i18n";
 import {
-  Button,
   Column,
   Dialog,
   DialogProps,
   FloatingSelect,
+  IconButton,
   MenuItem,
   Row,
   Slider,
@@ -34,15 +38,14 @@ import { Modals } from "../types";
 /** Output size of cropped emojis (server resizes to 128px anyway) */
 const OUTPUT_SIZE = 128;
 /** Size of the square editor viewport */
-const EDITOR_SIZE = 296;
+const EDITOR_SIZE = 280;
 
 /**
- * Create a new server emoji with a Discord-like crop & zoom editor.
+ * Create (or re-crop) a server emoji with a Discord-like editor:
+ * drag to position, zoom & rotation sliders, flip buttons and reset.
  *
- * - Static images can be repositioned/zoomed; the result is exported
- *   client-side at 128px to save bandwidth.
- * - GIFs are uploaded as-is (cropping would destroy animation), with a
- *   client-side size check against the instance limit.
+ * Static images are exported client-side at 128px to save bandwidth.
+ * GIFs are uploaded as-is (cropping would destroy animation).
  */
 export function CreateEmojiModal(
   props: DialogProps & Modals & { type: "create_emoji" },
@@ -50,12 +53,17 @@ export function CreateEmojiModal(
   const { t } = useLingui();
   const err = useError();
 
-  const [file, setFile] = createSignal<File | null>(null);
+  const [file, setFile] = createSignal<File | null>(props.file ?? null);
   const [objectUrl, setObjectUrl] = createSignal<string>();
   const [image, setImage] = createSignal<HTMLImageElement>();
-  const [name, setName] = createSignal("");
+  const [name, setName] = createSignal(
+    props.replace?.name ?? suggestName(props.file),
+  );
   const [serverId, setServerId] = createSignal(props.server?.id ?? "");
-  const [scale, setScale] = createSignal(1);
+  const [zoom, setZoom] = createSignal(1);
+  const [rotation, setRotation] = createSignal(0);
+  const [flipH, setFlipH] = createSignal(false);
+  const [flipV, setFlipV] = createSignal(false);
   const [offset, setOffset] = createSignal({ x: 0, y: 0 });
   const [pending, setPending] = createSignal(false);
   const [error, setError] = createSignal<unknown>();
@@ -79,6 +87,20 @@ export function CreateEmojiModal(
   const selectedServer = () =>
     availableServers().find((s) => s.id === serverId());
 
+  // always have a sensible default target server
+  createEffect(() => {
+    if (!selectedServer() && availableServers().length) {
+      setServerId(availableServers()[0].id);
+    }
+  });
+
+  const slotsRemaining = () => {
+    const server = selectedServer();
+    return server
+      ? CONFIGURATION.MAX_EMOJI - server.emojis.length
+      : undefined;
+  };
+
   /** Emoji upload size limit as advertised by the instance, if known */
   function emojiSizeLimit(): number | undefined {
     try {
@@ -93,71 +115,71 @@ export function CreateEmojiModal(
     }
   }
 
+  function loadFile(picked: File) {
+    setError(undefined);
+
+    // reject oversized GIFs immediately: they are sent unmodified
+    const limit = emojiSizeLimit();
+    if (picked.type === "image/gif" && limit && picked.size > limit) {
+      setError({ type: "FileTooLarge", max: limit });
+      return;
+    }
+
+    const previous = objectUrl();
+    if (previous) URL.revokeObjectURL(previous);
+
+    const url = URL.createObjectURL(picked);
+    const img = new Image();
+    img.onload = () => {
+      setImage(img);
+      resetTransform();
+    };
+    img.src = url;
+
+    setFile(picked);
+    setObjectUrl(url);
+    if (!name()) setName(suggestName(picked));
+  }
+
+  // load the file handed over by the entry point
+  if (props.file) loadFile(props.file);
+
   function pickFile() {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/png,image/jpeg,image/webp,image/gif";
     input.onchange = () => {
       const picked = input.files?.[0];
-      if (!picked) return;
-
-      setError(undefined);
-
-      // reject oversized GIFs immediately: they are sent unmodified
-      const limit = emojiSizeLimit();
-      if (picked.type === "image/gif" && limit && picked.size > limit) {
-        setError({ type: "FileTooLarge", max: limit });
-        return;
-      }
-
-      const previous = objectUrl();
-      if (previous) URL.revokeObjectURL(previous);
-
-      const url = URL.createObjectURL(picked);
-      const img = new Image();
-      img.onload = () => {
-        setImage(img);
-        setScale(1);
-        setOffset({ x: 0, y: 0 });
-      };
-      img.src = url;
-
-      setFile(picked);
-      setObjectUrl(url);
-      if (!name())
-        setName(
-          picked.name
-            .replace(/\.[a-zA-Z0-9]+$/, "")
-            .replaceAll(/[^a-zA-Z0-9_]/g, "_")
-            .slice(0, 32),
-        );
+      if (picked) loadFile(picked);
     };
     input.click();
   }
 
-  /** Base (cover) scale so the image always fills the crop square */
+  function resetTransform() {
+    setZoom(1);
+    setRotation(0);
+    setFlipH(false);
+    setFlipV(false);
+    setOffset({ x: 0, y: 0 });
+  }
+
+  /** Base (cover) scale so the image initially fills the crop square */
   function coverScale(img: HTMLImageElement) {
     return EDITOR_SIZE / Math.min(img.naturalWidth, img.naturalHeight);
   }
 
-  /** Clamp offset so no empty space is exposed inside the crop frame */
+  /** Loose panning bound (rotation makes exact clamping unrewarding) */
   function clampOffset(x: number, y: number) {
     const img = image();
     if (!img) return { x: 0, y: 0 };
-    const s = coverScale(img) * scale();
-    const maxX = Math.max(0, (img.naturalWidth * s - EDITOR_SIZE) / 2);
-    const maxY = Math.max(0, (img.naturalHeight * s - EDITOR_SIZE) / 2);
+    const s = coverScale(img) * zoom();
+    const bound =
+      (Math.hypot(img.naturalWidth, img.naturalHeight) * s) / 2;
     return {
-      x: Math.min(maxX, Math.max(-maxX, x)),
-      y: Math.min(maxY, Math.max(-maxY, y)),
+      x: Math.min(bound, Math.max(-bound, x)),
+      y: Math.min(bound, Math.max(-bound, y)),
     };
   }
-
-  // re-clamp when zooming out
-  createEffect(() => {
-    scale();
-    setOffset((o) => clampOffset(o.x, o.y));
-  });
 
   let dragFrom: { x: number; y: number; ox: number; oy: number } | null = null;
 
@@ -181,19 +203,20 @@ export function CreateEmojiModal(
     dragFrom = null;
   }
 
-  /** CSS transform of the image inside a given viewport size */
+  /** CSS transform of the image inside a viewport of given size */
   function imageStyle(viewport: number) {
     const img = image();
     if (!img) return {};
     const ratio = viewport / EDITOR_SIZE;
-    const s = coverScale(img) * scale() * ratio;
+    const s = coverScale(img) * zoom() * ratio;
     const o = offset();
     return {
-      width: `${img.naturalWidth * s}px`,
-      height: `${img.naturalHeight * s}px`,
-      transform: `translate(calc(-50% + ${o.x * ratio}px), calc(-50% + ${
-        o.y * ratio
-      }px))`,
+      width: `${img.naturalWidth}px`,
+      transform:
+        `translate(-50%, -50%) ` +
+        `translate(${o.x * ratio}px, ${o.y * ratio}px) ` +
+        `rotate(${rotation()}deg) ` +
+        `scale(${s * (flipH() ? -1 : 1)}, ${s * (flipV() ? -1 : 1)})`,
     };
   }
 
@@ -204,25 +227,17 @@ export function CreateEmojiModal(
     canvas.width = OUTPUT_SIZE;
     canvas.height = OUTPUT_SIZE;
     const ctx = canvas.getContext("2d")!;
-
-    const s = coverScale(img) * scale();
+    const outRatio = OUTPUT_SIZE / EDITOR_SIZE;
+    const s = coverScale(img) * zoom();
     const o = offset();
-    // top-left corner of the viewport in source-image coordinates
-    const sx = (img.naturalWidth * s / 2 - o.x - EDITOR_SIZE / 2) / s;
-    const sy = (img.naturalHeight * s / 2 - o.y - EDITOR_SIZE / 2) / s;
 
     ctx.imageSmoothingQuality = "high";
-    ctx.drawImage(
-      img,
-      sx,
-      sy,
-      EDITOR_SIZE / s,
-      EDITOR_SIZE / s,
-      0,
-      0,
-      OUTPUT_SIZE,
-      OUTPUT_SIZE,
-    );
+    ctx.translate(OUTPUT_SIZE / 2, OUTPUT_SIZE / 2);
+    ctx.scale(outRatio, outRatio);
+    ctx.translate(o.x, o.y);
+    ctx.rotate((rotation() * Math.PI) / 180);
+    ctx.scale(s * (flipH() ? -1 : 1), s * (flipV() ? -1 : 1));
+    ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
 
     return new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
   }
@@ -244,11 +259,7 @@ export function CreateEmojiModal(
         throw { type: "FileTooLarge", max: limit };
 
       const body = new FormData();
-      body.append(
-        "file",
-        payload,
-        isGif() ? file()!.name : `${name()}.png`,
-      );
+      body.append("file", payload, isGif() ? file()!.name : `${name()}.png`);
 
       const [key, value] = props.client.authenticationHeader;
       const res = await fetch(`${CONFIGURATION.DEFAULT_MEDIA_URL}/emojis`, {
@@ -259,12 +270,13 @@ export function CreateEmojiModal(
 
       // surface the actual error returned by the file server
       if (!res.ok)
-        throw await res
-          .json()
-          .catch(() => ({ type: "InternalError" }));
+        throw await res.json().catch(() => ({ type: "InternalError" }));
 
       const data: { id: string } = await res.json();
       await selectedServer()!.createEmoji(data.id, { name: name() });
+
+      // when re-cropping an existing emoji, replace it
+      if (props.replace) await props.replace.delete().catch(() => void 0);
 
       props.onClose();
     } catch (error) {
@@ -282,7 +294,7 @@ export function CreateEmojiModal(
       actions={[
         { text: <Trans>Cancel</Trans> },
         {
-          text: <Trans>Create</Trans>,
+          text: props.replace ? <Trans>Save</Trans> : <Trans>Create</Trans>,
           onClick: () => {
             onSubmit();
             return false;
@@ -293,8 +305,8 @@ export function CreateEmojiModal(
       isDisabled={pending()}
     >
       <Layout>
-        {/* editor viewport */}
-        <Column align>
+        {/* left: editor viewport & transform controls */}
+        <Column align gap="sm">
           <Switch
             fallback={
               <EditorFrame onClick={pickFile} data-empty>
@@ -328,36 +340,99 @@ export function CreateEmojiModal(
               >
                 <img src={objectUrl()} style={imageStyle(EDITOR_SIZE)} />
                 <CropOverlay />
+                <ResetHolder>
+                  <IconButton
+                    size="sm"
+                    onPress={resetTransform}
+                    aria-label={t`Reset adjustments`}
+                  >
+                    <MdRestartAlt />
+                  </IconButton>
+                </ResetHolder>
               </EditorFrame>
               <Text class="label" size="small">
                 <Trans>Drag the image to adjust its position</Trans>
               </Text>
-              <Slider
-                min={1}
-                max={4}
-                step={0.01}
-                value={scale()}
-                onInput={(e) => setScale(e.currentTarget.value)}
-                labelFormatter={(v) => `${Math.round(v * 100)}%`}
-              />
+
+              {/* flip + zoom row, Discord-style */}
+              <Row align gap="sm" class={css({ width: "100%" })}>
+                <IconButton
+                  size="sm"
+                  onPress={() => setFlipH((v) => !v)}
+                  aria-label={t`Flip horizontally`}
+                >
+                  <MdFlip />
+                </IconButton>
+                <IconButton
+                  size="sm"
+                  onPress={() => setFlipV((v) => !v)}
+                  aria-label={t`Flip vertically`}
+                >
+                  <MdFlip class={css({ transform: "rotate(90deg)" })} />
+                </IconButton>
+                <MdZoomOut />
+                <div class={css({ flexGrow: 1 })}>
+                  <Slider
+                    min={1}
+                    max={4}
+                    step={0.01}
+                    value={zoom()}
+                    onInput={(e) => setZoom(e.currentTarget.value)}
+                    labelFormatter={(v) => `${Math.round(v * 100)}%`}
+                  />
+                </div>
+                <MdZoomIn />
+              </Row>
+
+              {/* rotation row */}
+              <Row align gap="sm" class={css({ width: "100%" })}>
+                <Text class="label">
+                  <Trans>Rotation</Trans>
+                </Text>
+                <div class={css({ flexGrow: 1 })}>
+                  <Slider
+                    min={-180}
+                    max={180}
+                    step={1}
+                    value={rotation()}
+                    onInput={(e) => setRotation(e.currentTarget.value)}
+                    labelFormatter={(v) => `${v}°`}
+                  />
+                </div>
+              </Row>
             </Match>
           </Switch>
         </Column>
 
-        {/* controls */}
-        <Column gap="lg">
-          <Show when={file() && !isGif()}>
+        {/* right: previews & metadata */}
+        <Column gap="lg" class={css({ minWidth: "220px", flexGrow: 1 })}>
+          <Show when={file()}>
             <Column gap="sm">
               <Text class="label">
                 <Trans>Preview</Trans>
               </Text>
               <Row align gap="lg">
-                <PreviewBox size={32}>
-                  <img src={objectUrl()} style={imageStyle(32)} />
-                </PreviewBox>
-                <PreviewBox size={96}>
-                  <img src={objectUrl()} style={imageStyle(96)} />
-                </PreviewBox>
+                {/* in-context reaction preview */}
+                <ReactionPreview>
+                  <PreviewViewport style={{ width: "20px", height: "20px" }}>
+                    <Show
+                      when={!isGif()}
+                      fallback={<img src={objectUrl()} data-contain />}
+                    >
+                      <img src={objectUrl()} style={imageStyle(20)} />
+                    </Show>
+                  </PreviewViewport>
+                  6
+                </ReactionPreview>
+                {/* large preview */}
+                <PreviewViewport style={{ width: "72px", height: "72px" }} data-checker>
+                  <Show
+                    when={!isGif()}
+                    fallback={<img src={objectUrl()} data-contain />}
+                  >
+                    <img src={objectUrl()} style={imageStyle(72)} />
+                  </Show>
+                </PreviewViewport>
               </Row>
             </Column>
           </Show>
@@ -368,29 +443,29 @@ export function CreateEmojiModal(
             label={t`Emoji Name`}
             placeholder="my_emoji"
             onInput={(e) =>
-              setName(
-                e.currentTarget.value.replaceAll(/[^a-zA-Z0-9_]/g, "_"),
-              )
+              setName(e.currentTarget.value.replaceAll(/[^a-zA-Z0-9_]/g, "_"))
             }
           />
 
-          <Show when={!props.server}>
+          <Column gap="sm">
             <FloatingSelect
               label={t`Upload to`}
               value={serverId()}
+              disabled={availableServers().length <= 1}
               onChange={(e) => setServerId(e.currentTarget.value as string)}
             >
               <For each={availableServers()}>
-                {(server) => <MenuItem value={server.id}>{server.name}</MenuItem>}
+                {(server) => (
+                  <MenuItem value={server.id}>{server.name}</MenuItem>
+                )}
               </For>
             </FloatingSelect>
-          </Show>
-
-          <Show when={file()}>
-            <Button variant="text" size="small" onPress={pickFile}>
-              <Trans>Choose a different image</Trans>
-            </Button>
-          </Show>
+            <Show when={slotsRemaining() !== undefined}>
+              <Text class="label" size="small">
+                <Trans>{slotsRemaining()} emoji slots remaining</Trans>
+              </Text>
+            </Show>
+          </Column>
 
           <Show when={error()}>
             <div class={css({ color: "var(--md-sys-color-error)" })}>
@@ -403,14 +478,28 @@ export function CreateEmojiModal(
   );
 }
 
+/** Derive an emoji name from a file name */
+function suggestName(file?: File) {
+  return (
+    file?.name
+      .replace(/\.[a-zA-Z0-9]+$/, "")
+      .replaceAll(/[^a-zA-Z0-9_]/g, "_")
+      .slice(0, 32) ?? ""
+  );
+}
+
 const Layout = styled("div", {
   base: {
     display: "flex",
-    gap: "var(--gap-lg)",
+    gap: "var(--gap-xl)",
     flexWrap: "wrap",
     justifyContent: "center",
   },
 });
+
+/** Transparency checkerboard, as used by image editors */
+const CHECKERBOARD =
+  "repeating-conic-gradient(#ffffff 0% 25%, #cfcfcf 0% 50%) 50% / 16px 16px";
 
 const EditorFrame = styled("div", {
   base: {
@@ -419,8 +508,7 @@ const EditorFrame = styled("div", {
     height: `${EDITOR_SIZE}px`,
     overflow: "hidden",
     borderRadius: "var(--borderRadius-md)",
-    background:
-      "repeating-conic-gradient(var(--md-sys-color-surface-container-high) 0% 25%, transparent 0% 50%) 50% / 20px 20px",
+    background: CHECKERBOARD,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -437,6 +525,7 @@ const EditorFrame = styled("div", {
 
     "&[data-empty]": {
       cursor: "pointer",
+      background: "transparent",
       border: "2px dashed var(--md-sys-color-outline)",
     },
   },
@@ -452,27 +541,61 @@ const CropOverlay = styled("div", {
   },
 });
 
-function PreviewBox(props: { size: number; children?: never[] | unknown }) {
-  return (
-    <div
-      class={css({
-        position: "relative",
-        overflow: "hidden",
-        borderRadius: "var(--borderRadius-sm)",
-        flexShrink: 0,
+const ResetHolder = styled("div", {
+  base: {
+    position: "absolute",
+    top: "var(--gap-sm)",
+    right: "var(--gap-sm)",
+    zIndex: 1,
+    borderRadius: "var(--borderRadius-lg)",
+    background: "var(--md-sys-color-surface-container-high)",
+    opacity: 0.9,
+  },
+});
 
-        "& img": {
-          position: "absolute",
-          left: "50%",
-          top: "50%",
-          maxWidth: "none",
-          userSelect: "none",
-          pointerEvents: "none",
-        },
-      })}
-      style={{ width: `${props.size}px`, height: `${props.size}px` }}
-    >
-      {props.children as never}
-    </div>
-  );
-}
+/** Small clipped viewport rendering the live crop */
+const PreviewViewport = styled("div", {
+  base: {
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: "var(--borderRadius-sm)",
+    flexShrink: 0,
+
+    "& img": {
+      position: "absolute",
+      left: "50%",
+      top: "50%",
+      maxWidth: "none",
+      userSelect: "none",
+      pointerEvents: "none",
+    },
+
+    "& img[data-contain]": {
+      position: "static",
+      width: "100%",
+      height: "100%",
+      objectFit: "contain",
+    },
+
+    "&[data-checker]": {
+      background: CHECKERBOARD,
+    },
+  },
+});
+
+/** Mimics the message reaction pill (see Reactions.tsx) */
+const ReactionPreview = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: "var(--gap-md)",
+    padding: "var(--gap-md)",
+    borderRadius: "var(--borderRadius-md)",
+    fontWeight: 600,
+    fontFeatureSettings: "'tnum' 1",
+    color: "var(--md-sys-color-on-secondary-container)",
+    background: "var(--md-sys-color-secondary-container)",
+    userSelect: "none",
+  },
+});

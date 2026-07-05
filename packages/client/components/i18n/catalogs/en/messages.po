@@ -3657,3 +3657,39 @@ msgstr "This file is too large, the maximum size is {0} KB."
 #: components/i18n/errors.tsx
 msgid "This file is too small or empty."
 msgstr "This file is too small or empty."
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Reset adjustments"
+msgstr "Reset adjustments"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Flip horizontally"
+msgstr "Flip horizontally"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Flip vertically"
+msgstr "Flip vertically"
+
+#: components/modal/modals/CreateEmoji.tsx
+msgid "Rotation"
+msgstr "Rotation"
+
+#: components/modal/modals/DeleteEmoji.tsx
+msgid "Delete this emoji?"
+msgstr "Delete this emoji?"
+
+#: components/modal/modals/DeleteEmoji.tsx
+msgid "Messages using this emoji will no longer be able to display it."
+msgstr "Messages using this emoji will no longer be able to display it."
+
+#: components/app/interface/settings/server/emojis/EmojiList.tsx
+msgid "Click to rename"
+msgstr "Click to rename"
+
+#: components/app/interface/settings/server/emojis/EmojiList.tsx
+msgid "Edit emoji"
+msgstr "Edit emoji"
+
+#: components/app/interface/settings/server/emojis/EmojiList.tsx
+msgid "Delete emoji"
+msgstr "Delete emoji"

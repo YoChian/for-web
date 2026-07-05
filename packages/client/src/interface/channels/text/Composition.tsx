@@ -474,6 +474,7 @@ export function MessageComposition(props: Props) {
               <CompositionMediaPicker
                 onMessage={sendMessage}
                 onTextReplacement={(text) => setNodeReplacement([text])}
+                server={props.channel.server}
               >
                 {(triggerProps) => (
                   <>

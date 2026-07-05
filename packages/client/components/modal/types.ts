@@ -75,6 +75,13 @@ export type Modals =
       type: "create_emoji";
       client: Client;
       server?: Server;
+      file?: globalThis.File;
+      /** re-crop flow: emoji to replace on successful upload */
+      replace?: Emoji;
+    }
+  | {
+      type: "delete_emoji";
+      emoji: Emoji;
     }
   | {
       type: "create_channel";

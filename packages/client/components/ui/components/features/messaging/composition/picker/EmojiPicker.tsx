@@ -73,9 +73,27 @@ type Item =
 
 const COLUMNS = 9;
 
-export function EmojiPicker() {
+export function EmojiPicker(props: { server?: Server }) {
   const client = useClient();
   const { openModal } = useModals();
+
+  /** Pick a file first, then open the emoji editor */
+  function createEmoji() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/png,image/jpeg,image/webp,image/gif";
+    input.onchange = () => {
+      const file = input.files?.[0];
+      if (file)
+        openModal({
+          type: "create_emoji",
+          client: client(),
+          server: props.server,
+          file,
+        });
+    };
+    input.click();
+  }
   const { ordering } = useState();
 
   const [filter, setFilter] = createSignal("");
@@ -161,11 +179,7 @@ export function EmojiPicker() {
           }}
           onInput={(e) => setFilter(e.currentTarget.value)}
         />
-        <IconButton
-          onPress={() =>
-            openModal({ type: "create_emoji", client: client() })
-          }
-        >
+        <IconButton onPress={createEmoji}>
           <MdAdd />
         </IconButton>
       </Row>
