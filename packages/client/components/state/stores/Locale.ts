@@ -36,6 +36,13 @@ export class Locale extends AbstractStore<"locale", TypeLocale> {
   }
 
   /**
+   * Read the current locale configuration
+   */
+  get() {
+    return super.get();
+  }
+
+  /**
    * Hydrate external context
    */
   hydrate(): void {

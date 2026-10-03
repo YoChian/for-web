@@ -7,16 +7,22 @@ import { Client } from "stoat.js";
 import { State } from "..";
 
 import { AbstractStore } from ".";
+import { TypeLocale } from "./Locale";
 import { TypeNotificationOptions } from "./NotificationOptions";
 import { TypeOrdering } from "./Ordering";
 import { TypeReleaseNotes } from "./ReleaseNotes";
 
-type SynchronisedStores = "ordering" | "notifications" | "release-notes";
+type SynchronisedStores =
+  | "ordering"
+  | "notifications"
+  | "release-notes"
+  | "locale";
 
 const STORE_KEYS: SynchronisedStores[] = [
   "ordering",
   "notifications",
   "release-notes",
+  "locale",
 ];
 
 export interface TypeSynchronisation {
@@ -61,6 +67,7 @@ export class Sync extends AbstractStore<"sync", TypeSynchronisation> {
         ordering: 0,
         notifications: 0,
         "release-notes": 0,
+        locale: 0,
       },
     };
   }
@@ -178,12 +185,16 @@ export class Sync extends AbstractStore<"sync", TypeSynchronisation> {
       this.set("revision", key, ts);
       this.#blockSync.add(key);
       this.state.set(key, parsed);
+      this.state[key].hydrate();
     } else if (ts !== this.ts(key)) {
       // if ts is old, trigger write to synchronise to remote, but only if the data has been updated
       if (
         !isEqual(
           this.state[key].get(),
-          parsed as TypeOrdering & TypeNotificationOptions & TypeReleaseNotes,
+          parsed as TypeOrdering &
+            TypeNotificationOptions &
+            TypeReleaseNotes &
+            TypeLocale,
         )
       ) {
         this.touch(key);

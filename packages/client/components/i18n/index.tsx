@@ -41,22 +41,38 @@ export async function loadAndSwitchLocale(
  * @returns Preferred language
  */
 export function browserPreferredLanguage() {
-  const languages = Object.keys(Languages).map(
-    (x) => [x, Languages[x as keyof typeof Languages]] as const,
-  );
+  const keys = Object.keys(Languages);
+  const normalise = (key: string) => key.replace(/_/g, "-").toLowerCase();
+  const find = (predicate: (key: string) => boolean) =>
+    keys.find((key) => predicate(normalise(key)));
 
-  // Get the user's system language. Check for exact
-  // matches first, otherwise check for partial matches
-  return (
-    navigator.languages
-      .map((lang) => languages.find((l) => l[0].replace(/_/g, "-") == lang))
-      .filter((lang) => lang)[0]?.[0] ??
-    navigator.languages
-      .map((x) => x.split("-")[0])
-      .map((lang) => languages.find((l) => l[0] == lang))
-      .filter((lang) => lang)[0]?.[0] ??
-    Language.ENGLISH
-  );
+  // Check for exact matches first, then infer Chinese script from the
+  // region subtag (zh-CN → zh-Hans, zh-TW → zh-Hant, ...), and finally
+  // fall back to matching the primary language subtag (pt → pt-PT).
+  for (const raw of navigator.languages) {
+    const lang = raw.toLowerCase();
+
+    const exact = find((key) => key === lang);
+    if (exact) return exact;
+
+    if (lang.startsWith("zh")) {
+      const traditional = ["zh-tw", "zh-hk", "zh-mo", "zh-hant"].some((tag) =>
+        lang.startsWith(tag),
+      );
+      const script = find(
+        (key) => key === (traditional ? "zh-hant" : "zh-hans"),
+      );
+      if (script) return script;
+    }
+
+    const primary = lang.split("-")[0];
+    const partial = find(
+      (key) => key === primary || key.split("-")[0] === primary,
+    );
+    if (partial) return partial;
+  }
+
+  return Language.ENGLISH;
 }
 
 /**
