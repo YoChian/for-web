@@ -38,6 +38,7 @@
     "vite-plugin-solid-svg": "^0.8.1"
   },
   "dependencies": {
+    "@ark-ui/solid": "^5.37.1",
     "@codemirror/autocomplete": "^6.19.0",
     "@codemirror/commands": "^6.8.1",
     "@codemirror/lang-markdown": "^6.3.4",
