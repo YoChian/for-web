@@ -76,13 +76,18 @@ export function CreateEmojiModal(
   const isGif = () => file()?.type === "image/gif";
 
   /** Servers the user can upload emojis to */
-  const availableServers = createMemo(() =>
-    props.server
-      ? [props.server]
-      : props.client.servers.filter((server: Server) =>
-          server.havePermission("ManageCustomisation"),
-        ),
-  );
+  const availableServers = createMemo(() => {
+    const servers = props.client.servers.filter((server: Server) =>
+      server.havePermission("ManageCustomisation"),
+    );
+
+    // ensure the entry-point server is always present
+    if (props.server && !servers.find((s) => s.id === props.server!.id)) {
+      servers.unshift(props.server);
+    }
+
+    return servers;
+  });
 
   const selectedServer = () =>
     availableServers().find((s) => s.id === serverId());
@@ -451,7 +456,6 @@ export function CreateEmojiModal(
             <FloatingSelect
               label={t`Upload to`}
               value={serverId()}
-              disabled={availableServers().length <= 1}
               onChange={(e) => setServerId(e.currentTarget.value as string)}
             >
               <For each={availableServers()}>
