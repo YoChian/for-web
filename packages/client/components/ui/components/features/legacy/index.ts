@@ -42,5 +42,4 @@ export * from "./Input";
 export * from "./InputElement";
 export * from "./LegacyCheckbox";
 export * from "./Radio";
-export * from "./SegmentedButton";
 export * from "./Username";
