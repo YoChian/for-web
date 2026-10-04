@@ -49,7 +49,13 @@ export interface Props {
   readonly roundedIcon?: boolean;
   readonly iconBackground?: boolean;
 
-  readonly variant?: "filled" | "tonal" | "tertiary" | "tertiaryAlt";
+  readonly variant?:
+    | "filled"
+    | "tonal"
+    | "tertiary"
+    | "tertiaryAlt"
+    | "option"
+    | "optionSelected";
 
   readonly ignoreClick?: boolean;
 }
@@ -181,6 +187,26 @@ const Base = styled("a", {
       tertiaryAlt: {
         background: "var(--md-sys-color-tertiary)",
         "--color": "var(--md-sys-color-on-tertiary)",
+      },
+      // fork customization: choices in CategoryButton.Select; Material You
+      // keeps the tertiary tones, Discord uses neutral radio rows
+      option: {
+        background: "var(--md-sys-color-tertiary-container)",
+        "--color": "var(--md-sys-color-on-tertiary-container)",
+
+        _discord: {
+          background: "var(--md-sys-color-surface-container-low)",
+          "--color": "var(--md-sys-color-on-surface)",
+        },
+      },
+      optionSelected: {
+        background: "var(--md-sys-color-tertiary)",
+        "--color": "var(--md-sys-color-on-tertiary)",
+
+        _discord: {
+          background: "var(--md-sys-color-secondary-container)",
+          "--color": "var(--md-sys-color-on-secondary-container)",
+        },
       },
     },
     isLink: {
@@ -474,7 +500,7 @@ CategoryButton.Select = <T extends string>(props: SelectProps<T>) => {
           {(val) => (
             <CategoryButton
               icon="blank"
-              variant={value() === val ? "tertiaryAlt" : "tertiary"}
+              variant={value() === val ? "optionSelected" : "option"}
               action={<Radio2.Option checked={value() === val} />}
               //@ts-expect-error Type check breaks
               onClick={() => setValue(val)}
