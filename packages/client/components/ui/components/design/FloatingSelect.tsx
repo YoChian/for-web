@@ -1,20 +1,14 @@
-import { useFloating } from "solid-floating-ui";
 import {
-  JSX,
+  type JSX,
+  For,
   Show,
   children as accessChildren,
-  createEffect,
-  createSignal,
-  onCleanup,
-  onMount,
-  splitProps,
+  createMemo,
 } from "solid-js";
 import { Portal } from "solid-js/web";
-import { Motion, Presence } from "solid-motionone";
 
-import { autoUpdate, flip, offset, shift, size } from "@floating-ui/dom";
-import { MenuItem } from "mdui/components/menu-item";
-import { styled } from "styled-system/jsx";
+import { Select, createListCollection } from "@ark-ui/solid";
+import { cva } from "styled-system/css";
 
 type FloatingSelectPropsLabel =
   | { required: true; label: string }
@@ -25,280 +19,275 @@ type FloatingSelectProps = FloatingSelectPropsLabel & {
   disabled?: boolean;
   variant?: "filled" | "outlined";
   children: JSX.Element;
-  onChange?: (event: Event & { currentTarget: MenuItem }) => void;
+  onChange?: (event: { currentTarget: { value: string } }) => void;
   onOpened?: () => void;
 };
 
 /**
- * Custom Select component using floating-ui for proper positioning in modals
- *
- * This component solves the issue where MDUI's mdui-select uses position:fixed
- * which breaks when inside modals with CSS transforms.
- *
- * @see https://github.com/zdhxiong/mdui/issues/296
+ * Option declared through a MenuItem child
  */
-export function FloatingSelect(props: FloatingSelectProps) {
-  const [local, others] = splitProps(props, [
-    "value",
-    "label",
-    "required",
-    "disabled",
-    "variant",
-    "children",
-    "onChange",
-  ]);
+type Option = {
+  value: string;
+  label: string;
+  element: HTMLElement;
+};
 
-  const [isOpen, setIsOpen] = createSignal(false);
-  const [anchor, setAnchor] = createSignal<HTMLButtonElement>();
-  const [dropdown, setDropdown] = createSignal<HTMLDivElement>();
+const root = cva({
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--gap-sm)",
+    width: "100%",
+    minWidth: 0,
+  },
+});
 
-  const childrenAccessor = accessChildren(() => local.children);
+const label = cva({
+  base: {
+    fontSize: "12px",
+    fontWeight: 600,
+    letterSpacing: "0.02em",
+    textTransform: "uppercase",
+    color: "var(--md-sys-color-on-surface-variant)",
+    userSelect: "none",
+  },
+});
 
-  const selectedText = () => {
-    const items = childrenAccessor.toArray() as MenuItem[];
-    const selected = items.find((item: MenuItem) => {
-      return !!item.value && item.value === local.value;
-    });
-    return selected?.textContent || selected?.innerText || "";
-  };
-
-  const position = useFloating(anchor, dropdown, {
-    placement: "bottom-start",
-    whileElementsMounted: autoUpdate,
-    middleware: [
-      offset(4),
-      flip(),
-      shift({ padding: 8 }),
-      size({
-        apply({ rects, elements }) {
-          Object.assign(elements.floating.style, {
-            minWidth: `${rects.reference.width}px`,
-          });
-        },
-      }),
-    ],
-  });
-
-  function handleClickOutside(e: MouseEvent) {
-    if (!isOpen()) return;
-
-    const target = e.target as Node;
-    const anchorEl = anchor();
-    const dropdownEl = dropdown();
-
-    if (
-      anchorEl &&
-      !anchorEl.contains(target) &&
-      dropdownEl &&
-      !dropdownEl.contains(target)
-    ) {
-      setIsOpen(false);
-    }
-  }
-
-  onMount(() => {
-    document.addEventListener("mousedown", handleClickOutside);
-    if (props.onOpened) createEffect(() => isOpen() && props.onOpened?.());
-  });
-  onCleanup(() =>
-    document.removeEventListener("mousedown", handleClickOutside),
-  );
-
-  function handleItemClick(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    const menuItem: MenuItem | undefined =
-      target.closest("mdui-menu-item") ??
-      (event
-        .composedPath()
-        .find(
-          (el) => el instanceof HTMLElement && el.tagName === "MDUI-MENU-ITEM",
-        ) as MenuItem);
-
-    if (menuItem) {
-      if (menuItem.value != null && local.onChange) {
-        // Create a synthetic event that matches the expected interface
-        local.onChange({ ...event, currentTarget: menuItem });
-      }
-      setIsOpen(false);
-    }
-  }
-
-  return (
-    <>
-      <SelectTrigger
-        ref={setAnchor}
-        type="button"
-        open={isOpen()}
-        disabled={local.disabled}
-        onClick={() => !local.disabled && setIsOpen(!isOpen())}
-        {...others}
-      >
-        <Show when={local.label}>
-          <SelectLabel floating={!!local.value || isOpen()}>
-            {local.label}
-            {local.required && " *"}
-          </SelectLabel>
-        </Show>
-        <SelectValue labeled={!!local.label}>{selectedText()}</SelectValue>
-        <ArrowIcon open={isOpen()} viewBox="0 0 24 24">
-          <path d="M7 10l5 5 5-5z" />
-        </ArrowIcon>
-      </SelectTrigger>
-
-      <Portal mount={document.getElementById("floating")!}>
-        <Presence>
-          <Show when={isOpen()}>
-            <Motion
-              ref={setDropdown}
-              style={{
-                position: position.strategy,
-                top: `${position.y ?? 0}px`,
-                left: `${position.x ?? 0}px`,
-                "z-index": "1000",
-              }}
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2, easing: [0.87, 0, 0.13, 1] }}
-            >
-              <DropdownMenu onClick={handleItemClick}>
-                {local.children}
-              </DropdownMenu>
-            </Motion>
-          </Show>
-        </Presence>
-      </Portal>
-    </>
-  );
-}
-
-const SelectTrigger = styled("button", {
+const trigger = cva({
   base: {
     display: "flex",
     alignItems: "center",
-    justifyContent: "space-between",
+    gap: "var(--gap-md)",
     width: "100%",
-    minHeight: "56px",
-    padding: "8px 16px",
-    borderRadius: "4px 4px 0 0",
-    border: "none",
-    borderBottom: "1px solid var(--md-sys-color-outline)",
-    background: "var(--md-sys-color-surface-container-highest)",
+    height: "40px",
+    paddingInline: "12px 8px",
+    borderRadius: "var(--borderRadius-md)",
+    border: "1px solid transparent",
     color: "var(--md-sys-color-on-surface)",
-    cursor: "pointer",
-    position: "relative",
-    textAlign: "left",
-    fontSize: "16px",
+    fontSize: "15px",
     fontFamily: "inherit",
-    transition: "border-color 0.2s",
+    textAlign: "start",
+    cursor: "pointer",
+    outline: "none",
+    transition: "var(--transitions-fast) border-color",
 
-    "&:hover": {
-      borderBottomColor: "var(--md-sys-color-on-surface)",
+    "&:focus-visible, &[data-state=open]": {
+      borderColor: "var(--md-sys-color-primary)",
     },
 
-    "&:focus": {
-      outline: "none",
-      borderBottomColor: "var(--md-sys-color-primary)",
-      borderBottomWidth: "2px",
+    "&:disabled": {
+      opacity: 0.45,
+      cursor: "not-allowed",
     },
   },
   variants: {
-    open: {
-      true: {
-        borderBottomColor: "var(--md-sys-color-primary)",
-        borderBottomWidth: "2px",
+    variant: {
+      filled: {
+        background: "var(--md-sys-color-surface-dim)",
+        borderColor:
+          "color-mix(in srgb, 40% var(--md-sys-color-outline-variant), transparent)",
+      },
+      outlined: {
+        background: "transparent",
+        borderColor: "var(--md-sys-color-outline-variant)",
       },
     },
-    disabled: {
-      true: {
-        cursor: "not-allowed",
-        opacity: 0.38,
-      },
-    },
+  },
+  defaultVariants: {
+    variant: "filled",
   },
 });
 
-const SelectLabel = styled("label", {
+const valueText = cva({
   base: {
-    position: "absolute",
-    transition: "ease-in-out 0.2s",
-    left: "16px",
-    color: "var(--md-sys-color-on-surface-variant)",
-    pointerEvents: "none",
-    transformOrigin: "left top",
-  },
-  variants: {
-    floating: {
-      true: {
-        top: "8px",
-        fontSize: "12px",
-        transform: "translateY(0)",
-      },
-      false: {
-        top: "50%",
-        fontSize: "16px",
-        transform: "translateY(-50%)",
-      },
-    },
-  },
-});
-
-const SelectValue = styled("span", {
-  base: {
-    flex: 1,
+    flexGrow: 1,
+    minWidth: 0,
     overflow: "hidden",
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
+});
 
-  variants: {
-    labeled: {
-      true: {
-        paddingTop: "16px",
-      },
+const indicator = cva({
+  base: {
+    display: "grid",
+    flexShrink: 0,
+    color: "var(--md-sys-color-on-surface-variant)",
+    transition: "var(--transitions-medium) transform",
+
+    "&[data-state=open]": {
+      transform: "rotate(180deg)",
+    },
+
+    "& svg": {
+      width: "24px",
+      height: "24px",
+      fill: "currentcolor",
     },
   },
 });
 
-const DropdownMenu = styled("div", {
+const content = cva({
   base: {
+    zIndex: 1000,
     display: "flex",
     flexDirection: "column",
-    maxHeight: "40vh",
+    gap: "2px",
+    maxHeight: "min(40vh, var(--available-height))",
     overflowY: "auto",
-    scrollbarWidth: "none",
-    borderRadius: "4px",
+    padding: "6px",
+    borderRadius: "var(--borderRadius-sm)",
+    border:
+      "1px solid color-mix(in srgb, 40% var(--md-sys-color-outline-variant), transparent)",
     background: "var(--surface-floating)",
     color: "var(--md-sys-color-on-surface)",
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
-    padding: "8px 0",
-
-    "& mdui-menu-item": {
-      cursor: "pointer",
-      padding: "0px 1.5rem",
-      transition: "background 0.2s",
-      height: "3rem",
-
-      "&:hover": {
-        background:
-          "color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)",
-      },
-    },
+    boxShadow: "0 8px 16px rgba(0, 0, 0, 0.24)",
+    outline: "none",
   },
 });
 
-const ArrowIcon = styled("svg", {
+const item = cva({
   base: {
-    width: "24px",
-    height: "24px",
-    fill: "var(--md-sys-color-on-surface-variant)",
-    transition: "transform 0.2s",
-  },
-  variants: {
-    open: {
-      true: {
-        transform: "rotate(180deg)",
-      },
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--gap-md)",
+    minHeight: "36px",
+    padding: "6px 8px",
+    borderRadius: "var(--borderRadius-xs)",
+    color: "var(--md-sys-color-on-surface-variant)",
+    fontSize: "15px",
+    cursor: "pointer",
+
+    "& > :first-child": {
+      flexGrow: 1,
+      minWidth: 0,
+    },
+
+    "&[data-highlighted]": {
+      color: "var(--md-sys-color-on-surface)",
+      background:
+        "color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)",
+    },
+
+    "&[data-state=checked]": {
+      color: "var(--md-sys-color-on-surface)",
+    },
+
+    "&[data-disabled]": {
+      opacity: 0.45,
+      cursor: "not-allowed",
     },
   },
 });
+
+const itemIndicator = cva({
+  base: {
+    display: "grid",
+    flexShrink: 0,
+    color: "var(--md-sys-color-primary)",
+
+    "& svg": {
+      width: "20px",
+      height: "20px",
+      fill: "currentcolor",
+    },
+  },
+});
+
+/**
+ * Select field with its options declared as MenuItem children
+ *
+ * @library Ark UI (Select) + Discord-like skin (fork customization)
+ */
+export function FloatingSelect(props: FloatingSelectProps) {
+  const resolved = accessChildren(() => props.children);
+
+  const options = createMemo(() =>
+    resolved
+      .toArray()
+      .filter((node): node is HTMLElement => node instanceof HTMLElement)
+      .map(
+        (element): Option => ({
+          value: element.dataset.value ?? "",
+          label: element.textContent ?? "",
+          element,
+        }),
+      ),
+  );
+
+  const collection = createMemo(() =>
+    createListCollection({
+      items: options(),
+      itemToValue: (option) => option.value,
+      itemToString: (option) => option.label,
+    }),
+  );
+
+  /**
+   * Keep an Escape that already closed the list from also closing the
+   * surrounding modal through the global keybinds
+   *
+   * Bound with `on:keydown`: Solid delegates `onKeyDown` to the document,
+   * which the event only reaches after the keybind listener on the body.
+   */
+  function containEscape(event: KeyboardEvent) {
+    if (event.key === "Escape" && event.defaultPrevented) {
+      event.stopPropagation();
+    }
+  }
+
+  return (
+    <Select.Root
+      class={root()}
+      collection={collection()}
+      // an empty value is the placeholder option
+      value={props.value ? [props.value] : []}
+      onValueChange={(details) =>
+        props.onChange?.({ currentTarget: { value: details.value[0] ?? "" } })
+      }
+      onOpenChange={(details) => details.open && props.onOpened?.()}
+      disabled={props.disabled}
+      required={props.required}
+      positioning={{ placement: "bottom-start", sameWidth: true, gutter: 4 }}
+      loopFocus
+    >
+      <Show when={props.label}>
+        <Select.Label class={label()}>
+          {props.label}
+          {props.required && " *"}
+        </Select.Label>
+      </Show>
+      <Select.Control>
+        <Select.Trigger
+          class={trigger({ variant: props.variant })}
+          on:keydown={containEscape}
+        >
+          <Select.ValueText class={valueText()} />
+          <Select.Indicator class={indicator()}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 10l5 5 5-5z" />
+            </svg>
+          </Select.Indicator>
+        </Select.Trigger>
+      </Select.Control>
+      <Portal mount={document.getElementById("floating")!}>
+        <Select.Positioner>
+          <Select.Content class={content()} on:keydown={containEscape}>
+            <For each={options()}>
+              {(option) => (
+                <Select.Item item={option} class={item()}>
+                  {option.element}
+                  <Select.ItemIndicator class={itemIndicator()}>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
+                    </svg>
+                  </Select.ItemIndicator>
+                </Select.Item>
+              )}
+            </For>
+          </Select.Content>
+        </Select.Positioner>
+      </Portal>
+    </Select.Root>
+  );
+}

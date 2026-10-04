@@ -1,17 +1,17 @@
-import type { JSX } from "solid-js";
-
-import "mdui/components/menu-item.js";
+import { type JSX, splitProps } from "solid-js";
 
 /**
- * Single item that appears in a menu
+ * Single option of a FloatingSelect
  *
- * @library MDUI
- * @specification https://m3.material.io/components/menus
+ * Only declares the option: FloatingSelect reads `data-value` and moves the
+ * element into its own list (fork customization).
  */
 export function MenuItem(
-  props: JSX.HTMLAttributes<HTMLInputElement> & {
+  props: JSX.HTMLAttributes<HTMLDivElement> & {
     value?: string;
   },
 ) {
-  return <mdui-menu-item {...props} />;
+  const [local, rest] = splitProps(props, ["value"]);
+
+  return <div {...rest} data-value={local.value ?? ""} />;
 }
