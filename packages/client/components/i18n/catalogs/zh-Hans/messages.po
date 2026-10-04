@@ -42,6 +42,10 @@ msgstr "dddd LT"
 msgid "(changes are being saved…)"
 msgstr "（正在保存更改…）"
 
+#: components/ui/components/features/messaging/elements/Container.tsx
+msgid "(edited)"
+msgstr "（已编辑）"
+
 #: components/app/interface/desktop/Titlebar.tsx
 msgid "(reconnect now)"
 msgstr "（立即重连）"
@@ -1235,6 +1239,7 @@ msgid "Create invites for others to use"
 msgstr "创建供他人使用的邀请"
 
 #: components/modal/modals/CreateOrJoinServer.tsx
+#: src/interface/navigation/servers/ServerList.tsx
 msgid "Create or join a server"
 msgstr "创建或加入服务器"
 
