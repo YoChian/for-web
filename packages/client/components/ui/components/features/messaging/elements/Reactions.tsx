@@ -261,6 +261,7 @@ const AddReaction = styled(ReactionBase, {
     opacity: 0,
     justifyContent: "center",
     fontSize: "var(--emoji-size)",
+    fill: "currentcolor",
     background: "var(--md-sys-color-surface-bright)",
     height: "33px",
     aspectRatio: "1/1",
