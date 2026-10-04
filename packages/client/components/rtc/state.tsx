@@ -251,7 +251,9 @@ class Voice {
 
     room.addListener("connected", () => {
       this.#setState("CONNECTED");
-      if (this.speakingPermission)
+      // fork customization: joining while deafened stays muted, keeping
+      // micOn for when the user undeafens
+      if (this.speakingPermission && !this.#settings.deafen)
         room.localParticipant
           .setMicrophoneEnabled(this.#settings.micOn)
           .then((track) => {
@@ -356,7 +358,15 @@ class Voice {
   async toggleDeafen(fromMute?: boolean) {
     try {
       const room = this.room();
-      if (!room) throw "invalid state";
+
+      // fork customization: outside of a call, only flip the preference
+      if (!room) {
+        this.#settings.deafen = !this.#settings.deafen;
+        if (fromMute) this.#settings.micOn = true;
+        this.sound.playSound(this.#settings.deafen ? "deafen" : "undeafen");
+        return;
+      }
+
       await room.localParticipant.setMicrophoneEnabled(
         (this.#settings.micOn || !!fromMute) &&
           !room.localParticipant.isMicrophoneEnabled,
@@ -383,7 +393,14 @@ class Voice {
     }
     try {
       const room = this.room();
-      if (!room) throw "invalid state";
+
+      // fork customization: outside of a call, only flip the preference
+      if (!room) {
+        this.#settings.micOn = !this.#settings.micOn;
+        this.sound.playSound(this.#settings.micOn ? "unmute" : "mute");
+        return;
+      }
+
       await room.localParticipant.setMicrophoneEnabled(
         !room.localParticipant.isMicrophoneEnabled,
       );
