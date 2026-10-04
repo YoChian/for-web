@@ -84,7 +84,8 @@ const Hero = styled("section", {
     color: "#fff",
     background:
       "linear-gradient(145deg, #33294b 0%, #262038 62%, #211b31 100%)",
-    borderRadius: "clamp(28px, 3vw, 48px)",
+    // fork customization: flattened radius
+    borderRadius: "var(--borderRadius-xl)",
 
     "@media (max-width: 980px)": {
       padding: "38px",
@@ -192,7 +193,8 @@ const AccountSwitch = styled("div", {
       padding: "10px 16px",
       color: "var(--md-sys-color-primary)",
       border: "1px solid var(--md-sys-color-outline-variant)",
-      borderRadius: "999px",
+      // fork customization: no pill shapes
+      borderRadius: "var(--borderRadius-md)",
       fontWeight: 650,
       textDecoration: "none",
       transition: "background 150ms ease, border-color 150ms ease",

@@ -35,7 +35,8 @@ export const FlowBase = styled("div", {
       width: "100%",
       height: "54px",
       marginTop: "6px",
-      borderRadius: "999px",
+      // fork customization: no pill shapes
+      borderRadius: "var(--borderRadius-md)",
       fontSize: "0.95rem",
       fontWeight: 700,
     },

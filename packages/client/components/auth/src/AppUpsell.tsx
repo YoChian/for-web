@@ -113,7 +113,8 @@ const DownloadButton = styled("a", {
     padding: "12px 20px",
     color: "#211b31",
     background: "#f8f6ff",
-    borderRadius: "999px",
+    // fork customization: no pill shapes
+    borderRadius: "var(--borderRadius-md)",
     fontSize: "0.9rem",
     fontWeight: 700,
     textDecoration: "none",
