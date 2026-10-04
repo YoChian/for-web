@@ -49,7 +49,18 @@ export function UserPanel() {
 
   return (
     <div class={panel()}>
-      <div ref={setAccount} class={accountButton()}>
+      <div
+        ref={setAccount}
+        class={accountButton()}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            e.currentTarget.click();
+          }
+        }}
+      >
         <Avatar
           size={32}
           src={user()?.animatedAvatarURL}
@@ -143,11 +154,16 @@ const accountButton = cva({
     marginInlineStart: "-2px",
     borderRadius: "var(--borderRadius-sm)",
     cursor: "pointer",
+    outline: "none",
     transition: "var(--transitions-fast) background",
 
     "&:hover": {
       background:
         "color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)",
+    },
+
+    "&:focus-visible": {
+      boxShadow: "inset 0 0 0 2px var(--md-sys-color-primary)",
     },
   },
 });
@@ -188,8 +204,13 @@ const action = cva({
     background: "transparent",
     color: "var(--md-sys-color-on-surface-variant)",
     cursor: "pointer",
+    outline: "none",
     transition:
       "var(--transitions-fast) background, var(--transitions-fast) color",
+
+    "&:focus-visible": {
+      boxShadow: "inset 0 0 0 2px var(--md-sys-color-primary)",
+    },
 
     "&:hover": {
       color: "var(--md-sys-color-on-surface)",
