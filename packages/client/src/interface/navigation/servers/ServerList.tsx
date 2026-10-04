@@ -454,7 +454,7 @@ export const ServerList = (props: Props) => {
           </a>
         </Tooltip>
         <Show when={instance.isStoat}>
-          <Tooltip placement="right" content={"Find new servers to join"}>
+          <Tooltip placement="right" content={t`Find new servers to join`}>
             <a
               href={state.layout.getLastActiveDiscoverPath()}
               class={entryContainer({ action: true })}
