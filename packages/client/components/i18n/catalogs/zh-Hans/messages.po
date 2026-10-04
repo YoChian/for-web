@@ -953,6 +953,7 @@ msgstr "客户端设置"
 #: components/modal/modals/UserProfileMutualFriends.tsx
 #: components/modal/modals/UserProfileMutualGroups.tsx
 #: components/modal/modals/UserProfileRoles.tsx
+#: components/ui/components/design/Snackbar.tsx
 msgid "Close"
 msgstr "关闭"
 
@@ -1823,6 +1824,10 @@ msgstr "文件必须小于 {0}"
 #: src/interface/Home.tsx
 msgid "Find a community based on your hobbies or interests."
 msgstr "根据你的爱好或兴趣寻找社区。"
+
+#: src/interface/navigation/servers/ServerList.tsx
+msgid "Find new servers to join"
+msgstr "发现可加入的新服务器"
 
 #: components/auth/src/flows/FlowHome.tsx
 #~ msgid "Find your com<0/>munity,<1/>connect with the world."
