@@ -150,7 +150,8 @@ export function Avatar(props: Props) {
           height="32"
           class={css({ transition: "var(--transitions-fast) filter" })}
         >
-          <Shape shape={props.shape}>
+          {/* data attributes let containers restyle the avatar (fork customization) */}
+          <Shape shape={props.shape} data-avatar-shape>
             <Show when={props.interactive}>
               <Ripple />
             </Show>
@@ -159,6 +160,7 @@ export function Avatar(props: Props) {
               keyed
               fallback={
                 <FallbackBase
+                  data-avatar-fallback
                   contrast={
                     props.fallbackBackground === false
                       ? "bare"

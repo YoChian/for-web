@@ -443,7 +443,7 @@ export const ServerList = (props: Props) => {
         </Show>
         <Tooltip placement="right" content={t`Create or join a server`}>
           <a
-            class={entryContainer()}
+            class={entryContainer({ action: true })}
             onClick={() => props.onCreateOrJoinServer()}
           >
             <Avatar
@@ -457,7 +457,7 @@ export const ServerList = (props: Props) => {
           <Tooltip placement="right" content={"Find new servers to join"}>
             <a
               href={state.layout.getLastActiveDiscoverPath()}
-              class={entryContainer()}
+              class={entryContainer({ action: true })}
             >
               <Avatar
                 shape="rounded-square"
@@ -886,6 +886,30 @@ const entryContainer = cva({
     "&:hover:before": {
       height: "16px",
     },
+
+    // fork customization: Discord rail icons are circles that square off and
+    // take the accent when hovered or selected
+    _discord: {
+      "& [data-avatar-shape]": {
+        borderRadius: "50%",
+        transition: "border-radius 0.2s ease",
+      },
+
+      "& [data-avatar-fallback]": {
+        background: "var(--md-sys-color-surface-container-lowest)",
+        transition: "var(--transitions-fast) background",
+      },
+
+      "&:hover [data-avatar-shape]": {
+        borderRadius: "30%",
+      },
+
+      "&:hover [data-avatar-fallback]": {
+        color: "var(--md-sys-color-on-primary)",
+        fill: "var(--md-sys-color-on-primary)",
+        background: "var(--md-sys-color-primary)",
+      },
+    },
   },
   variants: {
     indicator: {
@@ -893,10 +917,39 @@ const entryContainer = cva({
         "&:before": {
           height: "32px !important",
         },
+
+        _discord: {
+          "& [data-avatar-shape]": {
+            borderRadius: "30%",
+          },
+
+          "& [data-avatar-fallback]": {
+            color: "var(--md-sys-color-on-primary)",
+            fill: "var(--md-sys-color-on-primary)",
+            background: "var(--md-sys-color-primary)",
+          },
+        },
       },
       alert: {
         "&:before": {
           height: "8px",
+        },
+      },
+    },
+    // add / discover buttons, green like Discord's
+    action: {
+      true: {
+        _discord: {
+          "& [data-avatar-fallback]": {
+            color: "var(--md-sys-color-tertiary)",
+            fill: "var(--md-sys-color-tertiary)",
+          },
+
+          "&:hover [data-avatar-fallback]": {
+            color: "var(--md-sys-color-on-tertiary)",
+            fill: "var(--md-sys-color-on-tertiary)",
+            background: "var(--md-sys-color-tertiary)",
+          },
         },
       },
     },
