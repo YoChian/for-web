@@ -8,8 +8,12 @@ import {
   useContext,
 } from "solid-js";
 import { Portal } from "solid-js/web";
+import { Motion, Presence } from "solid-motionone";
 
-import "mdui/components/snackbar.js";
+import { useLingui } from "@lingui/solid/macro";
+import { cva } from "styled-system/css";
+
+import { Symbol } from "../utils/Symbol";
 
 export type SnackbarItem = {
   id: string;
@@ -102,9 +106,8 @@ type ProviderProps = {
 /**
  * Provides snackbar context and renders the active snackbar into the floating portal.
  *
- * Position is controlled by the CSS custom property `--snackbar-offset-bottom`,
- * which shifts the snackbar upward via translateY. Default is 0px (flush with the
- * viewport bottom per mdui placement). Set it on `:root` to push above the chatbar:
+ * Bottom placements are lifted by the CSS custom property
+ * `--snackbar-offset-bottom` (80px by default, clear of the chatbar):
  *
  * ```css
  * :root { --snackbar-offset-bottom: 80px; }
@@ -115,18 +118,20 @@ export function SnackbarProvider(props: ProviderProps) {
     <SnackbarContext.Provider value={props.controller}>
       {props.children}
       <Portal mount={document.getElementById("floating")!}>
-        <Show when={props.controller.items()[0]} keyed>
-          {(item) => (
-            <Snackbar
-              {...item}
-              onClose={() => {
-                item.onClose?.();
-                props.controller.dismiss(item.id);
-              }}
-              onAction={() => item.onAction?.()}
-            />
-          )}
-        </Show>
+        <Presence exitBeforeEnter>
+          <Show when={props.controller.items()[0]} keyed>
+            {(item) => (
+              <Snackbar
+                {...item}
+                onClose={() => {
+                  item.onClose?.();
+                  props.controller.dismiss(item.id);
+                }}
+                onAction={() => item.onAction?.()}
+              />
+            )}
+          </Show>
+        </Presence>
       </Portal>
     </SnackbarContext.Provider>
   );
@@ -140,53 +145,160 @@ type SnackbarProps = SnackbarItem & {
 /**
  * Snackbars provide brief, non-intrusive feedback about an operation.
  *
- * @library MDUI
- * @specification https://m3.material.io/components/snackbar/overview
+ * @library Discord-like skin (fork customization)
  */
 function Snackbar(props: SnackbarProps) {
-  let el: HTMLElement | undefined;
-
-  // mdui only animates when `open` transitions false -> true, so start closed
-  const [open, setOpen] = createSignal(false);
+  const { t } = useLingui();
+  const placement = () => props.placement ?? "bottom";
+  const fromTop = () => placement().startsWith("top");
 
   onMount(() => {
-    if (!el) return;
-
-    // Dismiss from queue when the close animation starts
-    el.addEventListener("close", props.onClose);
-
-    el.addEventListener("action-click", () => {
-      props.onAction();
-      if (props.closeOnAction) {
-        setOpen(false);
-      }
-    });
-
-    // Let mdui commit the initial closed state before triggering the open
-    // transition; without this both changes land in the same microtask and
-    // mdui skips the enter animation.
-    requestAnimationFrame(() => setOpen(true));
-  });
-
-  onCleanup(() => {
-    if (!el) return;
-    el.removeEventListener("close", props.onClose);
+    if (!props.autoCloseDelay) return;
+    const timer = setTimeout(props.onClose, props.autoCloseDelay);
+    onCleanup(() => clearTimeout(timer));
   });
 
   return (
-    <mdui-snackbar
-      ref={el}
-      open={open()}
-      placement={props.placement ?? "bottom"}
-      action={props.action}
-      closeable={props.closeable}
-      auto-close-delay={props.autoCloseDelay}
-      message-line={props.messageLine}
-      style={{
-        translate: "0 calc(-1 * var(--snackbar-offset-bottom, 80px))",
-      }}
+    <Motion.div
+      class={snackbar({ placement: placement() })}
+      role="status"
+      initial={{ opacity: 0, y: fromTop() ? -16 : 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: fromTop() ? -16 : 16 }}
+      transition={{ duration: 0.2, easing: [0.05, 0.7, 0.1, 1] }}
     >
-      {props.message}
-    </mdui-snackbar>
+      <span class={message({ lines: props.messageLine })}>{props.message}</span>
+      <Show when={props.action}>
+        <button
+          type="button"
+          class={action()}
+          onClick={() => {
+            props.onAction();
+            if (props.closeOnAction) props.onClose();
+          }}
+        >
+          {props.action}
+        </button>
+      </Show>
+      <Show when={props.closeable}>
+        <button
+          type="button"
+          class={close()}
+          aria-label={t`Close`}
+          onClick={() => props.onClose()}
+        >
+          <Symbol size={20}>close</Symbol>
+        </button>
+      </Show>
+    </Motion.div>
   );
 }
+
+const snackbar = cva({
+  base: {
+    position: "fixed",
+    zIndex: 1100,
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--gap-l)",
+    width: "max-content",
+    minWidth: "min(320px, calc(100vw - 32px))",
+    maxWidth: "min(560px, calc(100vw - 32px))",
+    paddingBlock: "10px",
+    paddingInline: "16px 10px",
+    borderRadius: "var(--borderRadius-lg)",
+    background: "var(--md-sys-color-inverse-surface)",
+    color: "var(--md-sys-color-inverse-on-surface)",
+    boxShadow: "0 8px 16px rgba(0, 0, 0, 0.24)",
+    fontSize: "14px",
+    lineHeight: "20px",
+  },
+  variants: {
+    // centred with margins: the enter animation owns `transform`
+    placement: {
+      top: { top: "16px", insetInline: 0, marginInline: "auto" },
+      "top-start": { top: "16px", insetInlineStart: "16px" },
+      "top-end": { top: "16px", insetInlineEnd: "16px" },
+      bottom: {
+        bottom: "16px",
+        insetInline: 0,
+        marginInline: "auto",
+        translate: "0 calc(-1 * var(--snackbar-offset-bottom, 80px))",
+      },
+      "bottom-start": {
+        bottom: "16px",
+        insetInlineStart: "16px",
+        translate: "0 calc(-1 * var(--snackbar-offset-bottom, 80px))",
+      },
+      "bottom-end": {
+        bottom: "16px",
+        insetInlineEnd: "16px",
+        translate: "0 calc(-1 * var(--snackbar-offset-bottom, 80px))",
+      },
+    },
+  },
+});
+
+const message = cva({
+  base: {
+    flexGrow: 1,
+    minWidth: 0,
+    overflowWrap: "anywhere",
+  },
+  variants: {
+    lines: {
+      1: {
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+      },
+      2: {
+        display: "-webkit-box",
+        overflow: "hidden",
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: "vertical",
+      },
+    },
+  },
+});
+
+const action = cva({
+  base: {
+    flexShrink: 0,
+    paddingBlock: "6px",
+    paddingInline: "12px",
+    border: "none",
+    borderRadius: "var(--borderRadius-sm)",
+    background: "var(--md-sys-color-primary)",
+    color: "var(--md-sys-color-on-primary)",
+    fontFamily: "inherit",
+    fontSize: "14px",
+    fontWeight: 500,
+    cursor: "pointer",
+
+    "&:hover": {
+      background: "color-mix(in srgb, var(--md-sys-color-primary) 85%, black)",
+    },
+  },
+});
+
+const close = cva({
+  base: {
+    flexShrink: 0,
+    display: "grid",
+    placeItems: "center",
+    width: "28px",
+    height: "28px",
+    padding: 0,
+    border: "none",
+    borderRadius: "var(--borderRadius-sm)",
+    background: "transparent",
+    color: "inherit",
+    cursor: "pointer",
+    opacity: 0.7,
+
+    "&:hover": {
+      opacity: 1,
+    },
+  },
+});
