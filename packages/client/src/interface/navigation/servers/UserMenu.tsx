@@ -35,6 +35,12 @@ import MdNotificationsOff from "@material-design-icons/svg/outlined/notification
 
 interface Props {
   anchor: Accessor<HTMLDivElement | undefined>;
+
+  /**
+   * Where the menu opens, relative to the anchor
+   * @default right-start
+   */
+  placement?: "right-start" | "top-start";
 }
 
 const TruncatedStatusText = styled("div", {
@@ -60,7 +66,8 @@ export function UserMenu(props: Props) {
   const [ref, setRef] = createSignal<HTMLDivElement>();
 
   const position = useFloating(() => props.anchor(), ref, {
-    placement: "right-start",
+    // eslint-disable-next-line solid/reactivity
+    placement: props.placement ?? "right-start",
     whileElementsMounted: autoUpdate,
     middleware: [offset(5), shift()],
   });

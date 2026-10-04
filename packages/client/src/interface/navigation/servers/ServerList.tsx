@@ -79,6 +79,11 @@ interface Props {
    * Menu generator
    */
   menuGenerator: (target: Server | Channel) => JSX.Directives["floating"];
+
+  /**
+   * Leave the account and settings buttons to the user panel (fork customization)
+   */
+  hideUserControls?: boolean;
 }
 
 /**
@@ -297,30 +302,32 @@ export const ServerList = (props: Props) => {
             }
           />
         </a>
-        <Tooltip
-          placement="right"
-          content={() => (
-            <Column>
-              <span>{props.user.username}</span>
-              <Text class="label" size="small">
-                {props.user.presence}
-              </Text>
-            </Column>
-          )}
-          aria={props.user.username}
-        >
-          <a ref={setMenuButton} class={entryContainer()}>
-            <Avatar
-              shape="rounded-square"
-              size={42}
-              src={props.user.avatarURL}
-              holepunch={"bottom-right"}
-              overlay={<UserStatus.Graphic status={props.user.presence} />}
-              interactive
-            />
-          </a>
-          <UserMenu anchor={menuButton} />
-        </Tooltip>
+        <Show when={!props.hideUserControls}>
+          <Tooltip
+            placement="right"
+            content={() => (
+              <Column>
+                <span>{props.user.username}</span>
+                <Text class="label" size="small">
+                  {props.user.presence}
+                </Text>
+              </Column>
+            )}
+            aria={props.user.username}
+          >
+            <a ref={setMenuButton} class={entryContainer()}>
+              <Avatar
+                shape="rounded-square"
+                size={42}
+                src={props.user.avatarURL}
+                holepunch={"bottom-right"}
+                overlay={<UserStatus.Graphic status={props.user.presence} />}
+                interactive
+              />
+            </a>
+            <UserMenu anchor={menuButton} />
+          </Tooltip>
+        </Show>
         <For each={props.unreadConversations.slice(0, 9)}>
           {(conversation) => (
             <Tooltip placement="right" content={conversation.displayName}>
@@ -471,19 +478,21 @@ export const ServerList = (props: Props) => {
       <Shadow>
         <div />
       </Shadow>
-      <Tooltip placement="right" content={t`Settings`}>
-        <a
-          class={entryContainer()}
-          onClick={() => openModal({ type: "settings", config: "user" })}
-        >
-          <Avatar
-            shape="rounded-square"
-            size={42}
-            fallback={<Symbol fill>settings</Symbol>}
-            interactive
-          />
-        </a>
-      </Tooltip>
+      <Show when={!props.hideUserControls}>
+        <Tooltip placement="right" content={t`Settings`}>
+          <a
+            class={entryContainer()}
+            onClick={() => openModal({ type: "settings", config: "user" })}
+          >
+            <Avatar
+              shape="rounded-square"
+              size={42}
+              fallback={<Symbol fill>settings</Symbol>}
+              interactive
+            />
+          </a>
+        </Tooltip>
+      </Show>
     </ServerListBase>
   );
 };

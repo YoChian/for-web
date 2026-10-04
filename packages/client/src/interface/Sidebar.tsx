@@ -15,6 +15,7 @@ import { useState } from "@revolt/state";
 import { LAYOUT_SECTIONS } from "@revolt/state/stores/Layout";
 
 import { HomeSidebar, ServerList, ServerSidebar } from "./navigation";
+import { UserPanel } from "./navigation/UserPanel";
 
 const MainBar = styled("div", {
   base: {
@@ -26,6 +27,33 @@ const MainBar = styled("div", {
       position: "absolute",
       width: "100vw",
       height: "100%",
+    },
+  },
+});
+
+/**
+ * Channel sidebar with the user panel below it (fork customization)
+ */
+const SidebarColumn = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    flexShrink: 0,
+    minHeight: 0,
+    overflow: "hidden",
+    borderTopLeftRadius: "var(--borderRadius-lg)",
+    borderBottomLeftRadius: "var(--borderRadius-lg)",
+    background: "var(--md-sys-color-surface-container-low)",
+
+    // the channel sidebar takes the space above the panel
+    "& > :first-child": {
+      flex: "1 1 0",
+      minHeight: 0,
+      borderRadius: 0,
+    },
+
+    _phone: {
+      flexGrow: 1,
     },
   },
 });
@@ -46,6 +74,23 @@ export const Sidebar = (props: {
 
   const params = useParams<{ server: string }>();
   const location = useLocation();
+
+  const sidebarShown = () =>
+    state.layout.getSectionState(LAYOUT_SECTIONS.PRIMARY_SIDEBAR, true) &&
+    !location.pathname.startsWith("/discover");
+
+  // fork customization: under the Discord preset a user panel below the
+  // channel sidebar takes over the rail's account and settings buttons
+  const userPanel = () =>
+    sidebarShown() && state.theme.activeTheme.preset === "discord";
+
+  const channelSidebar = () => (
+    <Switch fallback={<Home />}>
+      <Match when={params.server}>
+        <Server />
+      </Match>
+    </Switch>
+  );
 
   return (
     <MainBar class="main_bar">
@@ -68,18 +113,15 @@ export const Sidebar = (props: {
           })
         }
         menuGenerator={props.menuGenerator}
+        hideUserControls={userPanel()}
       />
-      <Show
-        when={
-          state.layout.getSectionState(LAYOUT_SECTIONS.PRIMARY_SIDEBAR, true) &&
-          !location.pathname.startsWith("/discover")
-        }
-      >
-        <Switch fallback={<Home />}>
-          <Match when={params.server}>
-            <Server />
-          </Match>
-        </Switch>
+      <Show when={sidebarShown()}>
+        <Show when={userPanel()} fallback={channelSidebar()}>
+          <SidebarColumn>
+            {channelSidebar()}
+            <UserPanel />
+          </SidebarColumn>
+        </Show>
       </Show>
     </MainBar>
   );
