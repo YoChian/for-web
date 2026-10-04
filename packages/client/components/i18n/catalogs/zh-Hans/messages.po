@@ -1226,6 +1226,7 @@ msgid "Create invite"
 msgstr "创建邀请"
 
 #: components/modal/modals/CreateInvite.tsx
+#: src/interface/navigation/channels/ServerSidebar.tsx
 msgid "Create Invite"
 msgstr "创建邀请"
 
@@ -1353,6 +1354,7 @@ msgstr "使成员拒听"
 
 #: components/app/menus/shared/NotificationContextMenu.tsx
 #: components/ui/components/design/ColourPicker.tsx
+#: components/ui/components/features/messaging/composition/picker/EmojiPicker.tsx
 msgid "Default"
 msgstr "默认"
 
@@ -1599,6 +1601,10 @@ msgstr "编辑和删除频道"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Edit any permissions on the server"
 msgstr "编辑服务器上的任何权限"
+
+#: src/interface/navigation/channels/ServerSidebar.tsx
+msgid "Edit Channel"
+msgstr "编辑频道"
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Edit channel-specific role and default permissions"
