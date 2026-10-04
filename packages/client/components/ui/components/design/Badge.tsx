@@ -3,7 +3,6 @@ import { JSXElement } from "solid-js";
 import { cva } from "styled-system/css";
 
 interface Props {
-  slot?: string;
   children?: JSXElement;
   variant: "small" | "large";
 }

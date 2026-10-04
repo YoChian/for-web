@@ -1,17 +1,17 @@
 import {
   Accessor,
   JSX,
-  Match,
   Show,
-  Switch,
   createMemo,
   createSignal,
   splitProps,
 } from "solid-js";
 
+import { Tabs } from "@ark-ui/solid";
 import { Trans, useLingui } from "@lingui/solid/macro";
 import { VirtualContainer } from "@minht11/solid-virtual-container";
 import type { User } from "stoat.js";
+import { cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import { UserContextMenu } from "@revolt/app";
@@ -26,8 +26,6 @@ import {
   List,
   ListItem,
   ListSubheader,
-  NavigationRail,
-  NavigationRailItem,
   OverflowingText,
   UserStatus,
   main,
@@ -39,7 +37,7 @@ import { HeaderIcon } from "./common/CommonHeader";
 /**
  * Base layout of the friends page
  */
-const Base = styled("div", {
+const base = cva({
   base: {
     width: "100%",
     display: "flex",
@@ -48,6 +46,72 @@ const Base = styled("div", {
     "& .FriendsList": {
       height: "100%",
       paddingInline: "var(--gap-lg)",
+    },
+  },
+});
+
+/**
+ * Divider between the title and the tabs
+ */
+const divider = cva({
+  base: {
+    flexShrink: 0,
+    width: "1px",
+    height: "24px",
+    background: "var(--md-sys-color-outline-variant)",
+  },
+});
+
+/**
+ * Discord-like tab bar in the header (fork customization)
+ */
+const tabList = cva({
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--gap-sm)",
+    flexGrow: 1,
+    minWidth: 0,
+    overflowX: "auto",
+    scrollbarWidth: "none",
+  },
+});
+
+const tab = cva({
+  base: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    flexShrink: 0,
+    paddingBlock: "2px",
+    paddingInline: "8px",
+    border: "none",
+    borderRadius: "var(--borderRadius-sm)",
+    background: "transparent",
+    color: "var(--md-sys-color-on-surface-variant)",
+    fontFamily: "inherit",
+    fontSize: "15px",
+    fontWeight: 500,
+    lineHeight: "24px",
+    whiteSpace: "nowrap",
+    cursor: "pointer",
+    outline: "none",
+    transition:
+      "var(--transitions-fast) background, var(--transitions-fast) color",
+
+    "&:hover": {
+      color: "var(--md-sys-color-on-surface)",
+      background:
+        "color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)",
+    },
+
+    "&[data-selected]": {
+      color: "var(--md-sys-color-on-secondary-container)",
+      background: "var(--md-sys-color-secondary-container)",
+    },
+
+    "&:focus-visible": {
+      boxShadow: "inset 0 0 0 2px var(--md-sys-color-primary)",
     },
   },
 });
@@ -103,12 +167,54 @@ export function Friends() {
   const [page, setPage] = createSignal("online");
 
   return (
-    <Base>
+    <Tabs.Root
+      class={base()}
+      value={page()}
+      onValueChange={(details) => setPage(details.value)}
+      lazyMount
+      unmountOnExit
+    >
       <Header placement="primary">
         <HeaderIcon>
           <Symbol>group</Symbol>
         </HeaderIcon>
         <Trans>Friends</Trans>
+        <div class={divider()} />
+        <Tabs.List class={tabList()}>
+          <Tabs.Trigger value="online" class={tab()}>
+            <Trans>Online</Trans>
+          </Tabs.Trigger>
+          <Tabs.Trigger value="all" class={tab()}>
+            <Trans>All</Trans>
+          </Tabs.Trigger>
+          <Tabs.Trigger value="pending" class={tab()}>
+            <Trans>Pending</Trans>
+            <Show when={pending()}>
+              <Badge variant="large">{pending()}</Badge>
+            </Show>
+          </Tabs.Trigger>
+          <Tabs.Trigger value="blocked" class={tab()}>
+            <Trans>Blocked</Trans>
+          </Tabs.Trigger>
+        </Tabs.List>
+        <IconButton
+          variant="filled"
+          size="xs"
+          onPress={() =>
+            openModal({
+              type: "add_friend",
+              client: client(),
+            })
+          }
+          use:floating={{
+            tooltip: {
+              placement: "bottom",
+              content: t`Add a new friend`,
+            },
+          }}
+        >
+          <Symbol>person_add</Symbol>
+        </IconButton>
       </Header>
 
       <main class={main()}>
@@ -118,96 +224,46 @@ export function Friends() {
             "min-height": 0,
           }}
         >
-          <NavigationRail contained value={page} onValue={setPage}>
-            <div style={{ "margin-top": "6px", "margin-bottom": "12px" }}>
-              <IconButton
-                variant="filled"
-                shape="square"
-                onPress={() =>
-                  openModal({
-                    type: "add_friend",
-                    client: client(),
-                  })
-                }
-                use:floating={{
-                  tooltip: {
-                    placement: "right",
-                    content: t`Add a new friend`,
-                  },
-                }}
-              >
-                <Symbol>add</Symbol>
-              </IconButton>
-            </div>
-
-            <NavigationRailItem
-              icon={<Symbol>waving_hand</Symbol>}
-              value="online"
-            >
-              <Trans>Online</Trans>
-            </NavigationRailItem>
-            <NavigationRailItem icon={<Symbol>all_inbox</Symbol>} value="all">
-              <Trans>All</Trans>
-            </NavigationRailItem>
-            <NavigationRailItem
-              icon={<Symbol>notifications</Symbol>}
-              value="pending"
-            >
-              <Trans>Pending</Trans>
-              <Show when={pending()}>
-                <Badge slot="badge" variant="large">
-                  {pending()}
-                </Badge>
-              </Show>
-            </NavigationRailItem>
-            <NavigationRailItem icon={<Symbol>block</Symbol>} value="blocked">
-              <Trans>Blocked</Trans>
-            </NavigationRailItem>
-          </NavigationRail>
-
           <Deferred>
             <div class="FriendsList" ref={scrollTargetElement} use:scrollable>
-              <Switch
-                fallback={
-                  <People
-                    title={t`Online`}
-                    users={lists().online}
-                    scrollTargetElement={targetSignal}
-                  />
-                }
-              >
-                <Match when={page() === "all"}>
-                  <People
-                    title={t`All`}
-                    users={lists().friends}
-                    scrollTargetElement={targetSignal}
-                  />
-                </Match>
-                <Match when={page() === "pending"}>
-                  <People
-                    title={t`Incoming`}
-                    users={lists().incoming}
-                    scrollTargetElement={targetSignal}
-                  />
-                  <People
-                    title={t`Outgoing`}
-                    users={lists().outgoing}
-                    scrollTargetElement={targetSignal}
-                  />
-                </Match>
-                <Match when={page() === "blocked"}>
-                  <People
-                    title={t`Blocked`}
-                    users={lists().blocked}
-                    scrollTargetElement={targetSignal}
-                  />
-                </Match>
-              </Switch>
+              <Tabs.Content value="online">
+                <People
+                  title={t`Online`}
+                  users={lists().online}
+                  scrollTargetElement={targetSignal}
+                />
+              </Tabs.Content>
+              <Tabs.Content value="all">
+                <People
+                  title={t`All`}
+                  users={lists().friends}
+                  scrollTargetElement={targetSignal}
+                />
+              </Tabs.Content>
+              <Tabs.Content value="pending">
+                <People
+                  title={t`Incoming`}
+                  users={lists().incoming}
+                  scrollTargetElement={targetSignal}
+                />
+                <People
+                  title={t`Outgoing`}
+                  users={lists().outgoing}
+                  scrollTargetElement={targetSignal}
+                />
+              </Tabs.Content>
+              <Tabs.Content value="blocked">
+                <People
+                  title={t`Blocked`}
+                  users={lists().blocked}
+                  scrollTargetElement={targetSignal}
+                />
+              </Tabs.Content>
             </div>
           </Deferred>
         </div>
       </main>
-    </Base>
+    </Tabs.Root>
   );
 }
 

@@ -1,6 +1,5 @@
 import { Checkbox, List, Switch } from "../../design";
 import { type DialogProps, Dialog } from "../../design/Dialog";
-import { NavigationRail } from "../../navigation";
 
 /**
  * @deprecated Use the `Dialog` export instead!
@@ -26,11 +25,6 @@ export const ListItem = List.Item;
  * @deprecated Use the `List.Subheader` export instead!
  */
 export const ListSubheader = List.Subheader;
-
-/**
- * @deprecated Use the `NavigationRail.Item` export instead!
- */
-export const NavigationRailItem = NavigationRail.Item;
 
 /**
  * @deprecated Use the `Switch.Override` export instead!
