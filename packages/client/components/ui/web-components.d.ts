@@ -1,7 +1,7 @@
 declare module "solid-js" {
   namespace JSX {
     interface IntrinsicElements {
-      "md-ripple": { disabled?: boolean };
+      "md-ripple": { disabled?: boolean; class?: string };
     }
   }
 }
