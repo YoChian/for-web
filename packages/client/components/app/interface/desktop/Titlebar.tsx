@@ -179,7 +179,7 @@ const Base = styled("div", {
       },
       false: {
         color: "var(--md-sys-color-outline)",
-        background: "var(--md-sys-color-surface-container-high)",
+        background: "var(--surface-frame)",
       },
     },
   },

@@ -84,5 +84,5 @@ const settingsOverlay =
     height: "100%",
     pointerEvents: "all",
     color: "var(--md-sys-color-on-surface)",
-    background: "var(--md-sys-color-surface-container-highest)",
+    background: "var(--surface-settings-sidebar)",
   });

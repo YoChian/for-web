@@ -15,7 +15,7 @@ import {
 
 import { SelectedTheme, TypeTheme } from "@revolt/state/stores/Theme";
 
-import { generateDiscordScheme } from "./discordTheme";
+import { generateDiscordScheme, generateDiscordSurfaces } from "./discordTheme";
 
 /**
  * Generate the Material variables from the given properties
@@ -48,6 +48,34 @@ export function createMaterialColourVariables<P extends string>(
     default:
       return {} as never;
   }
+}
+
+/**
+ * Generate the surface variables that sit outside the Material roles
+ * (fork customization)
+ *
+ * Material You keeps the roles these surfaces used before.
+ */
+export function createSurfaceVariables(theme: SelectedTheme) {
+  const roles: SurfaceRoles =
+    theme.preset === "discord"
+      ? generateDiscordSurfaces(theme.darkMode)
+      : {
+          frame: "var(--md-sys-color-surface-container-high)",
+          floating: "var(--md-sys-color-surface-container)",
+          dialog: "var(--md-sys-color-surface-container-high)",
+          "settings-sidebar": "var(--md-sys-color-surface-container-highest)",
+          settings: "var(--md-sys-color-surface-container-low)",
+          card: "var(--md-sys-color-secondary-container)",
+        };
+
+  return Object.entries(roles).reduce(
+    (d, [key, value]) => ({
+      ...d,
+      [`--surface-${key}`]: value,
+    }),
+    {} as addPrefixToObject<SurfaceRoles, "--surface-">,
+  );
 }
 
 /**
@@ -131,6 +159,41 @@ export type MaterialColours = {
 
   scrim: string;
   shadow: string;
+};
+
+/**
+ * Surfaces exposed as `--surface-*` variables
+ */
+export type SurfaceRoles = {
+  /**
+   * Titlebar and server rail
+   */
+  frame: string;
+
+  /**
+   * Context menus and dropdowns
+   */
+  floating: string;
+
+  /**
+   * Dialogs
+   */
+  dialog: string;
+
+  /**
+   * Settings navigation
+   */
+  "settings-sidebar": string;
+
+  /**
+   * Settings pages
+   */
+  settings: string;
+
+  /**
+   * Category buttons
+   */
+  card: string;
 };
 
 /**

@@ -4,7 +4,7 @@ import {
   hexFromArgb,
 } from "@material/material-color-utilities";
 
-import type { MaterialColours } from "./materialTheme";
+import type { MaterialColours, SurfaceRoles } from "./materialTheme";
 
 /**
  * Neutral roles of the Discord-like scheme (fork customization)
@@ -114,6 +114,37 @@ type PrimaryRole =
   | "on-primary-fixed"
   | "on-primary-fixed-variant"
   | "inverse-primary";
+
+/**
+ * Discord surfaces that no Material role lines up with
+ */
+const SURFACES = {
+  dark: {
+    frame: "#1e1f22",
+    floating: "#111214",
+    dialog: "#313338",
+    "settings-sidebar": "#2b2d31",
+    settings: "#313338",
+    card: "#404249",
+  },
+  light: {
+    frame: "#e3e5e8",
+    floating: "#ffffff",
+    dialog: "#ffffff",
+    "settings-sidebar": "#f2f3f5",
+    settings: "#ffffff",
+    card: "#f2f3f5",
+  },
+} satisfies Record<"dark" | "light", SurfaceRoles>;
+
+/**
+ * Get the Discord surface roles
+ * @param darkMode Dark mode
+ * @returns Surface roles
+ */
+export function generateDiscordSurfaces(darkMode: boolean): SurfaceRoles {
+  return SURFACES[darkMode ? "dark" : "light"];
+}
 
 /**
  * Mix two #rrggbb colours

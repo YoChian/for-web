@@ -156,7 +156,7 @@ const Base = styled("a", {
         "--color": "var(--md-sys-color-on-primary)",
       },
       tonal: {
-        background: "var(--md-sys-color-secondary-container)",
+        background: "var(--surface-card)",
         "--color": "var(--md-sys-color-on-secondary-container)",
       },
       tertiary: {

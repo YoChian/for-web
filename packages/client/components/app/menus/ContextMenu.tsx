@@ -24,7 +24,7 @@ const Base = styled("div", {
     padding: "var(--gap-md) 0",
     overflow: "hidden",
     borderRadius: "var(--borderRadius-xs)",
-    background: "var(--md-sys-color-surface-container)",
+    background: "var(--surface-floating)",
     color: "var(--md-sys-color-on-surface)",
     fill: "var(--md-sys-color-on-surface)",
     boxShadow: "0 0 3px var(--md-sys-color-shadow)",

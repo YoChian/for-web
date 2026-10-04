@@ -213,7 +213,7 @@ const Container = styled("div", {
     flexDirection: "column",
 
     color: "var(--md-sys-color-on-surface)",
-    background: "var(--md-sys-color-surface-container-high)",
+    background: "var(--surface-dialog)",
   },
 });
 

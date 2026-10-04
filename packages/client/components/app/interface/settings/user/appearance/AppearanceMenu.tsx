@@ -467,6 +467,8 @@ const Preview = styled("div", {
     overflow: "hidden",
     borderRadius: "var(--borderRadius-lg)",
     background: "var(--md-sys-color-surface-container-lowest)",
+    // fork customization: the Discord settings pane shares the chat colour
+    border: "1px solid var(--md-sys-color-outline-variant)",
   },
 });
 

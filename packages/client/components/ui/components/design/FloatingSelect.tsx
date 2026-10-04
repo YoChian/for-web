@@ -268,7 +268,7 @@ const DropdownMenu = styled("div", {
     overflowY: "auto",
     scrollbarWidth: "none",
     borderRadius: "4px",
-    background: "var(--md-sys-color-surface-container)",
+    background: "var(--surface-floating)",
     color: "var(--md-sys-color-on-surface)",
     boxShadow: "0 2px 8px rgba(0, 0, 0, 0.2)",
     padding: "8px 0",

@@ -8,6 +8,7 @@ import {
   createMaterialColourVariables,
   createMduiColourTriplets,
   createStoatWebVariables,
+  createSurfaceVariables,
 } from ".";
 import { SlideState } from "../components/navigation/SlideDrawer";
 import { Masks } from "./Masks";
@@ -48,6 +49,8 @@ export function LoadTheme() {
       ...createStoatWebVariables(activeTheme),
       // mount --md-sys-color variables
       ...createMaterialColourVariables(activeTheme, "--md-sys-color-"),
+      // mount --surface variables (fork customization)
+      ...createSurfaceVariables(activeTheme),
       // mount --mdui-color triplet variables
       ...createMduiColourTriplets(activeTheme, "--mdui-color-"),
     };
