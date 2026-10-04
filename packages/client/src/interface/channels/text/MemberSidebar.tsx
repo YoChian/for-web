@@ -68,6 +68,7 @@ export function MemberSidebar(props: Props) {
  */
 export function ServerMemberSidebar(props: Props) {
   const client = useClient();
+  const { t } = useLingui();
 
   type MemberRoleElement =
     | { t: 0; name: string; count: number; icon?: string | null }
@@ -140,8 +141,8 @@ export function ServerMemberSidebar(props: Props) {
         icon: role.icon?.previewUrl,
       });
     }
-    roles.push({ id: "default", name: "Online" });
-    roles.push({ id: "offline", name: "Offline" });
+    roles.push({ id: "default", name: t`Online` });
+    roles.push({ id: "offline", name: t`Offline` });
 
     for (const role of roles) {
       const roleMembers = byRole
