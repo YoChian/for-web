@@ -169,7 +169,9 @@ const Actions = styled("div", {
     justifyContent: "center",
     alignSelf: "center",
 
-    borderRadius: "var(--borderRadius-full)",
+    // fork customization: concentric with the buttons inside
+    // (their --borderRadius-lg plus the --gap-md padding)
+    borderRadius: "var(--borderRadius-xxl)",
     background: "var(--md-sys-color-surface-container)",
   },
 });
