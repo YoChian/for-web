@@ -32,14 +32,16 @@ export function VoiceProcessingOptions() {
         />
         <CategoryButton
           icon="blank"
-          action={<Checkbox checked={voice.echoCancellation} />}
+          action={
+            <Checkbox variant="switch" checked={voice.echoCancellation} />
+          }
           onClick={() => (voice.echoCancellation = !voice.echoCancellation)}
         >
           <Trans>Browser Echo Cancellation</Trans>
         </CategoryButton>
         <CategoryButton
           icon="blank"
-          action={<Checkbox checked={voice.autoGainControl} />}
+          action={<Checkbox variant="switch" checked={voice.autoGainControl} />}
           onClick={() => (voice.autoGainControl = !voice.autoGainControl)}
         >
           <Trans>Automatic Gain Control</Trans>

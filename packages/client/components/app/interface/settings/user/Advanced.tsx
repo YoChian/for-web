@@ -19,6 +19,7 @@ export default function AdvancedSettings() {
     <Column gap="xl">
       <Column>
         <Checkbox
+          variant="switch"
           checked={state.settings.getValue("appearance:compact_mode")}
           onChange={(e) =>
             state.settings.setValue(
@@ -30,6 +31,7 @@ export default function AdvancedSettings() {
           <Trans>Compact mode</Trans>
         </Checkbox>
         <Checkbox
+          variant="switch"
           checked={state.settings.getValue("advanced:copy_id")}
           onChange={(e) =>
             state.settings.setValue("advanced:copy_id", e.currentTarget.checked)
@@ -38,6 +40,7 @@ export default function AdvancedSettings() {
           <Trans>Show 'copy ID' in context menus</Trans>
         </Checkbox>
         <Checkbox
+          variant="switch"
           checked={state.settings.getValue("advanced:admin_panel")}
           onChange={(e) =>
             state.settings.setValue(
@@ -55,6 +58,7 @@ export default function AdvancedSettings() {
             <CategoryButton
               action={
                 <Checkbox
+                  variant="switch"
                   checked={state.experiments.isEnabled(key)}
                   onChange={(event) =>
                     state.experiments.setEnabled(

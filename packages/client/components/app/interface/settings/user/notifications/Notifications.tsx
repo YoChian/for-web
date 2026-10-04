@@ -26,6 +26,7 @@ export default function Notifications(props: { isDesktop: boolean }) {
             <CategoryButton
               action={
                 <Checkbox
+                  variant="switch"
                   checked={settings.desktopNotificationsState === "allowed"}
                 />
               }
@@ -49,6 +50,7 @@ export default function Notifications(props: { isDesktop: boolean }) {
             <CategoryButton
               action={
                 <Checkbox
+                  variant="switch"
                   checked={settings.pushNotificationsState === "allowed"}
                 />
               }

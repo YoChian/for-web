@@ -9,7 +9,7 @@ export default function Accessibility() {
       {/* <CategoryButtonGroup>
         <FormGroup>
           <CategoryButton
-            action={<Checkbox value onChange={(value) => void value} />}
+            action={<Checkbox variant="switch" value onChange={(value) => void value} />}
             onClick={() => void 0}
             icon={<MdAnimation {...iconSize(22)} />}
             description={

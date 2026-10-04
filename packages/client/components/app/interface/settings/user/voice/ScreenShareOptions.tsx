@@ -42,7 +42,9 @@ export function ScreenShareOptions() {
         />
         <CategoryButton
           icon="blank"
-          action={<Checkbox checked={voice.screenShareQualityAsk} />}
+          action={
+            <Checkbox variant="switch" checked={voice.screenShareQualityAsk} />
+          }
           onClick={() =>
             (voice.screenShareQualityAsk = !voice.screenShareQualityAsk)
           }

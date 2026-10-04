@@ -1,4 +1,4 @@
-import { type JSX, Show } from "solid-js";
+import { type JSX, Show, children as resolveChildren } from "solid-js";
 
 import { Checkbox as ArkCheckbox } from "@ark-ui/solid";
 import { cva } from "styled-system/css";
@@ -12,6 +12,13 @@ type Props = {
   indeterminate?: boolean;
   class?: string;
   onChange?: (event: { currentTarget: { checked: boolean } }) => void;
+
+  /**
+   * Render as a Discord-like toggle switch under the Discord preset; Material
+   * You keeps the checkbox
+   * @default checkbox
+   */
+  variant?: "checkbox" | "switch";
 };
 
 const root = cva({
@@ -32,6 +39,31 @@ const root = cva({
       cursor: "inherit",
     },
   },
+  variants: {
+    switch: {
+      // label first, switch at the end of the row
+      true: {
+        _discord: {
+          flexDirection: "row-reverse",
+          justifyContent: "space-between",
+        },
+      },
+    },
+    labelled: {
+      true: {},
+    },
+  },
+  compoundVariants: [
+    {
+      switch: true,
+      labelled: true,
+      css: {
+        _discord: {
+          width: "100%",
+        },
+      },
+    },
+  ],
 });
 
 const control = cva({
@@ -71,6 +103,45 @@ const control = cva({
       fill: "currentcolor",
     },
   },
+  variants: {
+    switch: {
+      true: {
+        _discord: {
+          position: "relative",
+          width: "40px",
+          height: "24px",
+          border: "none",
+          borderRadius: "var(--borderRadius-full)",
+          background: "var(--md-sys-color-outline)",
+
+          "&::after": {
+            content: '""',
+            position: "absolute",
+            top: "3px",
+            left: "3px",
+            width: "18px",
+            height: "18px",
+            borderRadius: "var(--borderRadius-full)",
+            background: "#ffffff",
+            boxShadow: "0 1px 2px rgba(0, 0, 0, 0.2)",
+            transition: "var(--transitions-fast) transform",
+          },
+
+          "&[data-state=checked]": {
+            background: "var(--md-sys-color-tertiary)",
+          },
+
+          "&[data-state=checked]::after": {
+            transform: "translateX(16px)",
+          },
+
+          "& > [data-part=indicator]": {
+            display: "none !important",
+          },
+        },
+      },
+    },
+  },
 });
 
 /**
@@ -84,10 +155,11 @@ const control = cva({
 export function Checkbox(props: Props) {
   const displayOnly = () =>
     props.checked !== undefined && !props.onChange && !props.name;
+  const label = resolveChildren(() => props.children);
 
   return (
     <ArkCheckbox.Root
-      class={`${root()} ${props.class ?? ""}`}
+      class={`${root({ switch: props.variant === "switch", labelled: !!label() })} ${props.class ?? ""}`}
       checked={props.indeterminate ? "indeterminate" : props.checked}
       onCheckedChange={(details) =>
         props.onChange?.({
@@ -99,7 +171,9 @@ export function Checkbox(props: Props) {
       disabled={props.disabled}
       readOnly={displayOnly()}
     >
-      <ArkCheckbox.Control class={control()}>
+      <ArkCheckbox.Control
+        class={control({ switch: props.variant === "switch" })}
+      >
         <ArkCheckbox.Indicator>
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" />
@@ -111,8 +185,8 @@ export function Checkbox(props: Props) {
           </svg>
         </ArkCheckbox.Indicator>
       </ArkCheckbox.Control>
-      <Show when={props.children}>
-        <ArkCheckbox.Label>{props.children}</ArkCheckbox.Label>
+      <Show when={label()}>
+        <ArkCheckbox.Label>{label()}</ArkCheckbox.Label>
       </Show>
       {/* the surrounding element takes focus in display-only mode */}
       <ArkCheckbox.HiddenInput tabIndex={displayOnly() ? -1 : undefined} />

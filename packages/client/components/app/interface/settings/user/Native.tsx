@@ -96,7 +96,7 @@ export default function Native() {
   ) {
     return (
       <CategoryButton
-        action={<Checkbox checked={config()[key]} />}
+        action={<Checkbox variant="switch" checked={config()[key]} />}
         onClick={toggles[key]}
         icon={<Symbol>{icon}</Symbol>}
         description={description}
@@ -110,7 +110,7 @@ export default function Native() {
     <Column gap="lg">
       <CategoryButton.Group>
         <CategoryButton
-          action={<Checkbox checked={autostart()} />}
+          action={<Checkbox variant="switch" checked={autostart()} />}
           onClick={toggleAutostart}
           icon={<Symbol>exit_to_app</Symbol>}
           description={

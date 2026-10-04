@@ -303,7 +303,11 @@ export function AppearanceMenu() {
           <Trans>Display & Text</Trans>
         </Text>
 
-        <Checkbox checked={state.theme.blur} onChange={state.theme.toggleBlur}>
+        <Checkbox
+          variant="switch"
+          checked={state.theme.blur}
+          onChange={state.theme.toggleBlur}
+        >
           <Trans>
             Enable transparency glass/blur effects (slow on older machines)
           </Trans>
@@ -404,6 +408,7 @@ export function AppearanceMenu() {
         </Text>
 
         <Checkbox
+          variant="switch"
           checked={state.settings.getValue("appearance:show_send_button")}
           onChange={(event) =>
             state.settings.setValue(

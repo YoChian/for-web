@@ -612,6 +612,7 @@ function ChannelPermissionToggle(props: {
 }) {
   return (
     <Checkbox2
+      variant="switch"
       name={props.key}
       checked={props.value}
       onChange={(event) => props.onChange(event.currentTarget.checked)}

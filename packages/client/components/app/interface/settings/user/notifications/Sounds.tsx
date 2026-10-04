@@ -30,7 +30,9 @@ export default function Sounds() {
         </Text>
         <CategoryButton.Group>
           <CategoryButton
-            action={<Checkbox checked={sounds.enabled("message")} />}
+            action={
+              <Checkbox variant="switch" checked={sounds.enabled("message")} />
+            }
             onClick={() => sounds.toggle("message")}
             icon="blank"
           >
@@ -50,7 +52,9 @@ export default function Sounds() {
             </Content>
           </CategoryButton>
           <CategoryButton
-            action={<Checkbox checked={sounds.enabled("mute")} />}
+            action={
+              <Checkbox variant="switch" checked={sounds.enabled("mute")} />
+            }
             onClick={() => sounds.toggle("mute")}
             icon="blank"
           >
@@ -70,7 +74,9 @@ export default function Sounds() {
             </Content>
           </CategoryButton>
           <CategoryButton
-            action={<Checkbox checked={sounds.enabled("unmute")} />}
+            action={
+              <Checkbox variant="switch" checked={sounds.enabled("unmute")} />
+            }
             onClick={() => sounds.toggle("unmute")}
             icon="blank"
           >
@@ -90,7 +96,9 @@ export default function Sounds() {
             </Content>
           </CategoryButton>
           <CategoryButton
-            action={<Checkbox checked={sounds.enabled("deafen")} />}
+            action={
+              <Checkbox variant="switch" checked={sounds.enabled("deafen")} />
+            }
             onClick={() => sounds.toggle("deafen")}
             icon="blank"
           >
@@ -110,7 +118,9 @@ export default function Sounds() {
             </Content>
           </CategoryButton>
           <CategoryButton
-            action={<Checkbox checked={sounds.enabled("undeafen")} />}
+            action={
+              <Checkbox variant="switch" checked={sounds.enabled("undeafen")} />
+            }
             onClick={() => sounds.toggle("undeafen")}
             icon="blank"
           >
@@ -132,7 +142,9 @@ export default function Sounds() {
           {/* I don't think we need this? */}
           <Show when={false}>
             <CategoryButton
-              action={<Checkbox onChange={(value) => void value} />}
+              action={
+                <Checkbox variant="switch" onChange={(value) => void value} />
+              }
               onClick={() => void 0}
               icon="blank"
             >
@@ -140,7 +152,12 @@ export default function Sounds() {
             </CategoryButton>
           </Show>
           <CategoryButton
-            action={<Checkbox checked={sounds.enabled("userJoinVoice")} />}
+            action={
+              <Checkbox
+                variant="switch"
+                checked={sounds.enabled("userJoinVoice")}
+              />
+            }
             onClick={() => sounds.toggle("userJoinVoice")}
             icon="blank"
           >
@@ -160,7 +177,12 @@ export default function Sounds() {
             </Content>
           </CategoryButton>
           <CategoryButton
-            action={<Checkbox checked={sounds.enabled("userLeaveVoice")} />}
+            action={
+              <Checkbox
+                variant="switch"
+                checked={sounds.enabled("userLeaveVoice")}
+              />
+            }
             onClick={() => sounds.toggle("userLeaveVoice")}
             icon="blank"
           >
@@ -182,7 +204,12 @@ export default function Sounds() {
             </Content>
           </CategoryButton>
           <CategoryButton
-            action={<Checkbox checked={sounds.enabled("streamStart")} />}
+            action={
+              <Checkbox
+                variant="switch"
+                checked={sounds.enabled("streamStart")}
+              />
+            }
             onClick={() => sounds.toggle("streamStart")}
             icon="blank"
           >
@@ -202,7 +229,12 @@ export default function Sounds() {
             </Content>
           </CategoryButton>
           <CategoryButton
-            action={<Checkbox checked={sounds.enabled("streamEnd")} />}
+            action={
+              <Checkbox
+                variant="switch"
+                checked={sounds.enabled("streamEnd")}
+              />
+            }
             onClick={() => sounds.toggle("streamEnd")}
             icon="blank"
           >
