@@ -109,6 +109,11 @@ const base = css({
     borderRadius: 0,
   },
 
+  // fork customization: square edge against the sidebar, like Discord
+  _discord: {
+    borderRadius: 0,
+  },
+
   _tablet: {
     // prevent the fixed action rail from scroll with this element instead of the viewport
     willChange: "auto !important",
