@@ -23,7 +23,7 @@ export const FlowBase = styled("div", {
     maxWidth: "440px",
     gap: "var(--gap-lg)",
 
-    "& form, & form mdui-text-field": {
+    "& form": {
       width: "100%",
     },
 

@@ -78,27 +78,6 @@ export function createSurfaceVariables(theme: SelectedTheme) {
   );
 }
 
-/**
- * Create R,G,B triplets for MDUI variables
- */
-export function createMduiColourTriplets<P extends string>(
-  theme: SelectedTheme,
-  prefix: P,
-): addPrefixToObject<MaterialColours, P> {
-  const variables = createMaterialColourVariables(theme, prefix);
-
-  for (const key in variables) {
-    const [_, r, g, b] = /#([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})/i.exec(
-      variables[key as keyof typeof variables] as string,
-    )!;
-
-    variables[key as keyof typeof variables] =
-      `${parseInt(r, 16)}, ${parseInt(g, 16)}, ${parseInt(b, 16)}` as never;
-  }
-
-  return variables;
-}
-
 type addPrefixToObject<T, P extends string> = {
   [K in keyof T as K extends string ? `${P}${K}` : never]: T[K];
 };

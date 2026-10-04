@@ -276,20 +276,6 @@ export function Form(props: Props) {
     event.preventDefault();
 
     const form = event.currentTarget as HTMLFormElement;
-
-    // mdui text fields aren't native form controls, so the browser doesn't
-    // stop the submission when they're empty or invalid; check them here
-    const invalidField = [...form.querySelectorAll("mdui-text-field")].find(
-      (field) => !field.checkValidity(),
-    );
-
-    if (invalidField) {
-      invalidField.reportValidity();
-      invalidField.focus();
-      bubble?.flashError();
-      return;
-    }
-
     const formData = new FormData(form);
     const finishSubmit = bubble?.beginSubmit();
 
@@ -313,7 +299,13 @@ export function Form(props: Props) {
   }
 
   return (
-    <form onSubmit={onSubmit}>
+    <form
+      onSubmit={onSubmit}
+      // native validation blocks the submission; `invalid` doesn't bubble
+      ref={(form) =>
+        form.addEventListener("invalid", () => bubble?.flashError(), true)
+      }
+    >
       <Column gap="lg">
         {props.children}
         <Show when={error()}>

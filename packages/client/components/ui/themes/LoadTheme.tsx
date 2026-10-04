@@ -6,7 +6,6 @@ import { useState } from "@revolt/state";
 
 import {
   createMaterialColourVariables,
-  createMduiColourTriplets,
   createStoatWebVariables,
   createSurfaceVariables,
 } from ".";
@@ -51,8 +50,6 @@ export function LoadTheme() {
       ...createMaterialColourVariables(activeTheme, "--md-sys-color-"),
       // mount --surface variables (fork customization)
       ...createSurfaceVariables(activeTheme),
-      // mount --mdui-color triplet variables
-      ...createMduiColourTriplets(activeTheme, "--mdui-color-"),
     };
   });
 

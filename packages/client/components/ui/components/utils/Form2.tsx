@@ -47,7 +47,7 @@ const FormTextField = (
         value={local.control.value}
         oninput={(e) => {
           if (!e.currentTarget.checkValidity()) {
-            // Rely on the dom and mdui to handle errors with text fields
+            // Rely on native validation to report errors with text fields
             local.control.setErrors({ invalid: true });
           } else {
             local.control.setErrors(null);

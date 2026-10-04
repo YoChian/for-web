@@ -177,12 +177,10 @@ const Base = styled("a", {
       tertiary: {
         background: "var(--md-sys-color-tertiary-container)",
         "--color": "var(--md-sys-color-on-tertiary-container)",
-        "--mdui-color-primary": "var(--color)",
       },
       tertiaryAlt: {
         background: "var(--md-sys-color-tertiary)",
         "--color": "var(--md-sys-color-on-tertiary)",
-        "--mdui-color-primary": "var(--color)",
       },
     },
     isLink: {
