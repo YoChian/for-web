@@ -63,6 +63,11 @@ export function LoadTheme() {
       document.body.style.setProperty(key, value);
   });
 
+  // expose the preset to styles, see the `_discord` condition (fork customization)
+  createEffect(() => {
+    document.body.dataset.preset = state.theme.activeTheme.preset;
+  });
+
   //Set PWA theme color
   createEffect(() => {
     const drawerShown =

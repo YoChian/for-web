@@ -15,7 +15,13 @@ export default defineConfig({
   // Where to look for your css declarations
   include: ["./src/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
 
-  conditions: { extend: condExt },
+  conditions: {
+    extend: {
+      ...condExt,
+      // fork customization: styles that only apply to the Discord preset
+      discord: "[data-preset=discord] &",
+    },
+  },
 
   // Useful for theme customization
   theme: {
