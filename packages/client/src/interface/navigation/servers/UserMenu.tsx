@@ -122,8 +122,13 @@ export function UserMenu(props: Props) {
               top: `${position.y ?? 0}px`,
               left: `${position.x ?? 0}px`,
             }}
-            initial={{ opacity: 0, x: -24 }}
-            animate={{ opacity: 1, x: 0 }}
+            // fork customization: slide in from the side the menu opens on
+            initial={
+              props.placement === "top-start"
+                ? { opacity: 0, y: 24 }
+                : { opacity: 0, x: -24 }
+            }
+            animate={{ opacity: 1, x: 0, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2, easing: [0.87, 0, 0.13, 1] }}
           >
