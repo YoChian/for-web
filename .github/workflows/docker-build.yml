@@ -15,14 +15,20 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
+# fork customization: a newer push cancels the older build of the same ref,
+# so an older image can never overwrite the tag after a newer one
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     name: Build Docker Image
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm]
-        exclude:
-          - os: ${{ github.event_name == 'pull_request' && 'ubuntu-24.04-arm' || '' }}
+        # fork customization: amd64 only; each matrix job pushes the same
+        # single-platform tag, so a second arch would overwrite the first
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     permissions:
       contents: read
