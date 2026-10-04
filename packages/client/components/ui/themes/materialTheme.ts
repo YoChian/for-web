@@ -67,6 +67,7 @@ export function createSurfaceVariables(theme: SelectedTheme) {
           "settings-sidebar": "var(--md-sys-color-surface-container-highest)",
           settings: "var(--md-sys-color-surface-container-low)",
           card: "var(--md-sys-color-secondary-container)",
+          scrollbar: "var(--md-sys-color-primary)",
         };
 
   return Object.entries(roles).reduce(
@@ -173,6 +174,11 @@ export type SurfaceRoles = {
    * Category buttons
    */
   card: string;
+
+  /**
+   * Scrollbar thumbs
+   */
+  scrollbar: string;
 };
 
 /**

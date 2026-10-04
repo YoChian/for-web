@@ -126,6 +126,7 @@ const SURFACES = {
     "settings-sidebar": "#2b2d31",
     settings: "#313338",
     card: "#404249",
+    scrollbar: "#1a1b1e",
   },
   light: {
     frame: "#e3e5e8",
@@ -134,6 +135,7 @@ const SURFACES = {
     "settings-sidebar": "#f2f3f5",
     settings: "#ffffff",
     card: "#f2f3f5",
+    scrollbar: "#c4c9ce",
   },
 } satisfies Record<"dark" | "light", SurfaceRoles>;
 
