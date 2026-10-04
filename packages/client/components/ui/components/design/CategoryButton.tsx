@@ -64,6 +64,16 @@ export function CategoryButton(props: Props) {
       isLink={!!props.onClick}
       disabled={props.disabled}
       aria-disabled={props.disabled}
+      // fork customization: reachable and usable from the keyboard
+      role={props.onClick ? "button" : undefined}
+      tabIndex={props.onClick && !props.disabled ? 0 : undefined}
+      onKeyDown={(e: KeyboardEvent) => {
+        if (e.target !== e.currentTarget) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          (e.currentTarget as HTMLElement).click();
+        }
+      }}
       onClick={(e: Event) => {
         // Disable action when button is disabled
         if (props.disabled || props.ignoreClick) return;
@@ -148,6 +158,11 @@ const Base = styled("a", {
 
     color: "var(--color)",
     fill: "var(--color)",
+    outline: "none",
+
+    "&:focus-visible": {
+      boxShadow: "inset 0 0 0 2px var(--md-sys-color-primary)",
+    },
   },
   variants: {
     variant: {
