@@ -41,6 +41,7 @@ export function LeaveServerModal(
         { text: <Trans>Cancel</Trans> },
         {
           text: <Trans>Leave</Trans>,
+          variant: "danger",
           onClick: () => {
             onSubmit();
             return false;

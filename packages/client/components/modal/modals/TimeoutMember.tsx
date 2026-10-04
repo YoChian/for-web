@@ -60,6 +60,7 @@ export function TimeoutMemberModal(
         { text: <Trans>Cancel</Trans> },
         {
           text: <Trans>Timeout</Trans>,
+          variant: "danger",
           onClick: timeout.mutateAsync,
         },
       ]}

@@ -28,6 +28,7 @@ export function KickMemberModal(
         { text: <Trans>Cancel</Trans> },
         {
           text: <Trans>Kick</Trans>,
+          variant: "danger",
           onClick: kick.mutateAsync,
         },
       ]}

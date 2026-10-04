@@ -50,6 +50,8 @@ export function DeleteChannelModal(
               </Match>
             </Switch>
           ),
+          variant:
+            props.channel.type === "DirectMessage" ? "primary" : "danger",
           onClick: () => deleteChannel.mutateAsync(),
         },
       ]}

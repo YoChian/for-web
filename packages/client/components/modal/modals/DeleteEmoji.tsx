@@ -27,6 +27,7 @@ export function DeleteEmojiModal(
         { text: <Trans>Cancel</Trans> },
         {
           text: <Trans>Delete</Trans>,
+          variant: "danger",
           onClick: () => deleteEmoji.mutateAsync(),
         },
       ]}

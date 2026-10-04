@@ -27,6 +27,7 @@ export function ResetBotTokenModal(
         { text: <Trans>Cancel</Trans> },
         {
           text: <Trans>Reset</Trans>,
+          variant: "danger",
           onClick: () => resetToken.mutateAsync(),
         },
       ]}

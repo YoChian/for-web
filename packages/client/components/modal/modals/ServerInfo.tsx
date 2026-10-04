@@ -60,7 +60,7 @@ export function ServerInfoModal(
             });
           },
         },
-        { text: <Trans>Close</Trans> },
+        { text: <Trans>Close</Trans>, variant: "secondary" },
       ]}
     >
       <Markdown content={props.server.description!} />

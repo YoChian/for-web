@@ -30,6 +30,7 @@ export function RemoveMemberModal(
         { text: <Trans>Cancel</Trans> },
         {
           text: <Trans>Remove</Trans>,
+          variant: "danger",
           onClick: () => removeMember.mutateAsync(props.user.id),
         },
       ]}

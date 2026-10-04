@@ -32,6 +32,7 @@ export function DeleteCategoryModal(
         { text: <Trans>Cancel</Trans> },
         {
           text: <Trans>Delete</Trans>,
+          variant: "danger",
           onClick: deleteCategory.mutateAsync,
         },
       ]}

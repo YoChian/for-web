@@ -34,6 +34,7 @@ export function SignOutSessionsModal(
         { text: <Trans>Cancel</Trans> },
         {
           text: <Trans>Accept</Trans>,
+          variant: "danger",
           onClick: () => signOutSessions.mutateAsync(),
         },
       ]}

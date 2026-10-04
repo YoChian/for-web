@@ -5,6 +5,8 @@ import { Motion, Presence } from "solid-motionone";
 
 import { styled } from "styled-system/jsx";
 
+import { useState } from "@revolt/state";
+
 import { Button } from "./Button";
 import { typography } from "./Text";
 
@@ -17,7 +19,19 @@ export interface DialogAction {
   text: JSX.Element;
   onClick?: () => void | Promise<unknown> | true | false;
   isDisabled?: boolean;
+
+  /**
+   * Button weight under the Discord preset (fork customization)
+   * @default "primary" for the last action, "secondary" for the rest
+   */
+  variant?: "primary" | "secondary" | "danger";
 }
+
+const DISCORD_ACTION_VARIANTS = {
+  primary: "filled",
+  secondary: "tonal",
+  danger: "_error",
+} as const;
 
 type Props = DialogProps & {
   icon?: JSX.Element;
@@ -38,6 +52,19 @@ type Props = DialogProps & {
  * @specification https://m3.material.io/components/dialogs
  */
 export function Dialog(props: Props) {
+  const state = useState();
+
+  /**
+   * Text buttons for Material You, Discord-like solid buttons otherwise
+   */
+  const actionVariant = (action: DialogAction, index: number) =>
+    state.theme.activeTheme.preset === "discord"
+      ? DISCORD_ACTION_VARIANTS[
+          action.variant ??
+            (index === props.actions!.length - 1 ? "primary" : "secondary")
+        ]
+      : "text";
+
   return (
     <Portal mount={document.getElementById("floating")!}>
       <Dialog.Scrim
@@ -79,9 +106,9 @@ export function Dialog(props: Props) {
                 <Show when={props.actions}>
                   <Actions>
                     <For each={props.actions}>
-                      {(action) => (
+                      {(action, index) => (
                         <Button
-                          variant="text"
+                          variant={actionVariant(action, index())}
                           size="sm"
                           onPress={() => {
                             if (action.isDisabled) return;

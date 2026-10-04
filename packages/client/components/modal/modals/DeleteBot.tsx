@@ -36,6 +36,7 @@ export function DeleteBotModal(
         { text: <Trans>Cancel</Trans> },
         {
           text: <Trans>Delete</Trans>,
+          variant: "danger",
           onClick: () => deleteBot.mutateAsync(),
         },
       ]}

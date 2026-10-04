@@ -56,6 +56,7 @@ export function BanMemberModal(
         { text: <Trans>Cancel</Trans> },
         {
           text: <Trans>Ban</Trans>,
+          variant: "danger",
           onClick: () => {
             onSubmit();
             return false;
