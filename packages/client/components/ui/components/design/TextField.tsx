@@ -138,7 +138,8 @@ const input = cva({
       borderColor: "var(--md-sys-color-primary)",
     },
 
-    "&[data-invalid], &[aria-invalid=true]": {
+    // :user-invalid waits until the field has been interacted with
+    "&[data-invalid], &[aria-invalid=true], &:user-invalid": {
       borderColor: "var(--md-sys-color-error)",
     },
 
