@@ -38,8 +38,9 @@ export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
         </IconButton>
       </Show>
       <Show when={props.size !== "xs" && voice.layout() === "collapsed"}>
+        {/* fork customization: tonal so it reads as a button in the bar */}
         <IconButton
-          variant="standard"
+          variant="tonal"
           size={props.size}
           onPress={() => voice.toggleLayout("collapsed")}
           use:floating={{
