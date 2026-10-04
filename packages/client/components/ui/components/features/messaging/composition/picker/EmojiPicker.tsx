@@ -172,7 +172,7 @@ export function EmojiPicker(props: { server?: Server }) {
 
     items.push({
       t: 3,
-      title: "Default",
+      title: t`Default`,
     });
 
     while (items.length % cols) {

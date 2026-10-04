@@ -1231,6 +1231,7 @@ msgid "Create invite"
 msgstr "Create invite"
 
 #: components/modal/modals/CreateInvite.tsx
+#: src/interface/navigation/channels/ServerSidebar.tsx
 msgid "Create Invite"
 msgstr "Create Invite"
 
@@ -1358,6 +1359,7 @@ msgstr "Deafen Members"
 
 #: components/app/menus/shared/NotificationContextMenu.tsx
 #: components/ui/components/design/ColourPicker.tsx
+#: components/ui/components/features/messaging/composition/picker/EmojiPicker.tsx
 msgid "Default"
 msgstr "Default"
 
@@ -1609,6 +1611,10 @@ msgstr "Edit and delete channel"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Edit any permissions on the server"
 msgstr "Edit any permissions on the server"
+
+#: src/interface/navigation/channels/ServerSidebar.tsx
+msgid "Edit Channel"
+msgstr "Edit Channel"
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Edit channel-specific role and default permissions"
