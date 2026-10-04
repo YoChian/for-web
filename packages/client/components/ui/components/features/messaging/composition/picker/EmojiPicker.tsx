@@ -202,7 +202,7 @@ export function EmojiPicker(props: { server?: Server }) {
         <TextField
           autoFocus={!isMobile}
           variant="outlined"
-          placeholder="Search for emojis..."
+          placeholder={t`Search for emojis...`}
           value={filter()}
           onInput={(e) => setFilter(e.currentTarget.value)}
         />

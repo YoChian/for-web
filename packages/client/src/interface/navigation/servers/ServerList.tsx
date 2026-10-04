@@ -471,7 +471,7 @@ export const ServerList = (props: Props) => {
       <Shadow>
         <div />
       </Shadow>
-      <Tooltip placement="right" content="Settings">
+      <Tooltip placement="right" content={t`Settings`}>
         <a
           class={entryContainer()}
           onClick={() => openModal({ type: "settings", config: "user" })}

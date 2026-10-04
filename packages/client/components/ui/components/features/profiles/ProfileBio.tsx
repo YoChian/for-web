@@ -1,5 +1,6 @@
 import { Show } from "solid-js";
 
+import { Trans } from "@lingui/solid/macro";
 import { styled } from "styled-system/jsx";
 
 import { Markdown } from "@revolt/markdown";
@@ -31,7 +32,7 @@ export function ProfileBio(props: Props) {
         </Show>
 
         <Text class="title" size="large">
-          Bio
+          <Trans>Bio</Trans>
         </Text>
 
         <Bio>

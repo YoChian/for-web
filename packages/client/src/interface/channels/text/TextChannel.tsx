@@ -8,6 +8,7 @@ import {
   onCleanup,
 } from "solid-js";
 
+import { Trans } from "@lingui/solid/macro";
 import { cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 import { decodeTime, ulid } from "ulid";
@@ -273,7 +274,7 @@ export function TextChannel(props: ChannelPageProps) {
                 <WideSidebarContainer>
                   <SidebarTitle>
                     <Text class="label" size="large">
-                      Search Results
+                      <Trans>Search Results</Trans>
                     </Text>
                   </SidebarTitle>
                   <TextSearchSidebar
@@ -288,7 +289,7 @@ export function TextChannel(props: ChannelPageProps) {
                 <WideSidebarContainer>
                   <SidebarTitle>
                     <Text class="label" size="large">
-                      Pinned Messages
+                      <Trans>Pinned Messages</Trans>
                     </Text>
                   </SidebarTitle>
                   <TextSearchSidebar

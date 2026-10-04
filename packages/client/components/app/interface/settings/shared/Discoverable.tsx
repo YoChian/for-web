@@ -93,7 +93,9 @@ export function Discoverable(props: {
                   <Text class="title" size="small">
                     <Trans>Can't get discover request status right now</Trans>
                   </Text>
-                  <Text>Please try again later</Text>
+                  <Text>
+                    <Trans>Please try again later</Trans>
+                  </Text>
                 </MessagePreview>
               }
             >

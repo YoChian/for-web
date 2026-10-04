@@ -78,7 +78,7 @@ export function DraftMessage(props: Props) {
           return (
             <>
               <Text class="label">
-                Uploading file `{file.file.name}`...{" "}
+                <Trans>Uploading file `{file.file.name}`...</Trans>{" "}
                 {(file.uploadProgress[0]() * 100).toFixed()}%
               </Text>
               <Switch>
@@ -90,7 +90,9 @@ export function DraftMessage(props: Props) {
                     <PreviewWrapper>
                       <PreviewImage src={file.dataUri} spoiler={spoiler()} />
                       <Show when={spoiler()}>
-                        <SpoilerLabel>Spoiler</SpoilerLabel>
+                        <SpoilerLabel>
+                          <Trans>Spoiler</Trans>
+                        </SpoilerLabel>
                       </Show>
                     </PreviewWrapper>
                   </SizedContent>

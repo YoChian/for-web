@@ -135,7 +135,7 @@ export function ViewWebhook(props: { webhook: ChannelWebhook }) {
           disabled={deleteWebhook.isPending}
           onClick={() => deleteWebhook.mutate()}
         >
-          Delete webhook
+          <Trans>Delete webhook</Trans>
         </CategoryButton>
       </Column>
     </Column>

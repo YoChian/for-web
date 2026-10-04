@@ -1,5 +1,6 @@
 import { Match, Switch, createSignal, onMount } from "solid-js";
 
+import { Trans } from "@lingui/solid/macro";
 import { Handler } from "mdast-util-to-hast";
 import { RE_CUSTOM_EMOJI } from "stoat.js";
 import { cva } from "styled-system/css";
@@ -50,7 +51,7 @@ export function RenderCustomEmoji(props: { id: string }) {
                   <Switch
                     fallback={
                       <>
-                        Unknown emote
+                        <Trans>Unknown emote</Trans>
                         <FetchEmote id={props.id} />
                       </>
                     }

@@ -9,7 +9,7 @@ import {
   onMount,
 } from "solid-js";
 
-import { Trans } from "@lingui/solid/macro";
+import { Trans, useLingui } from "@lingui/solid/macro";
 import { styled } from "styled-system/jsx";
 
 import { Titlebar } from "@revolt/app/interface/desktop/Titlebar";
@@ -316,6 +316,7 @@ const SUCCESS_FLASH_MS = 1400;
  * Shared layout for every logged-out account flow.
  */
 export function AuthPage(props: { children: JSX.Element }) {
+  const { t } = useLingui();
   const state = useState();
   const location = useLocation();
   const { lifecycle } = useClientLifecycle();
@@ -559,7 +560,7 @@ export function AuthPage(props: { children: JSX.Element }) {
 
               <IconButton
                 variant="tonal"
-                aria-label="Toggle color theme"
+                aria-label={t`Toggle color theme`}
                 onPress={() =>
                   state.theme.setMode(
                     state.theme.activeTheme.darkMode ? "light" : "dark",
@@ -630,7 +631,7 @@ export function AuthPage(props: { children: JSX.Element }) {
           </FlowWrap>
 
           <Footer>
-            <nav aria-label="Legal">
+            <nav aria-label={t`Legal`}>
               <a href="https://stoat.chat/terms" target="_blank">
                 <Trans>Terms</Trans>
               </a>
@@ -641,7 +642,7 @@ export function AuthPage(props: { children: JSX.Element }) {
                 <Trans>Help</Trans>
               </a>
             </nav>
-            <Socials aria-label="Social links">
+            <Socials aria-label={t`Social links`}>
               <a
                 href="https://github.com/stoatchat"
                 target="_blank"
