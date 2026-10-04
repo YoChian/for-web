@@ -188,6 +188,13 @@ const base = cva({
         "&:hover": {
           background: "var(--md-sys-color-surface-container)",
         },
+
+        // fork customization: a faint shade, like Discord
+        _discord: {
+          "&:hover": {
+            background: "color-mix(in srgb, black 6%, transparent)",
+          },
+        },
       },
       hide: {},
     },
