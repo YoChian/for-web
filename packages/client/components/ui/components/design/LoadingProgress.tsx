@@ -1,17 +1,17 @@
-import "mdui/components/circular-progress.js";
 import { cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 /**
  * Progress indicators express an unspecified wait time or display the duration of a process
  *
- * @library MDUI
- * @specification https://m3.material.io/components/progress-indicators
+ * @library Discord-like CSS spinner (fork customization)
  */
 export function CircularProgress() {
   return (
     <Base>
-      <mdui-circular-progress class={loader()} />
+      <svg class={spinner()} viewBox="25 25 50 50" role="progressbar">
+        <circle cx="50" cy="50" r="20" />
+      </svg>
     </Base>
   );
 }
@@ -26,11 +26,24 @@ const Base = styled("div", {
   },
 });
 
-const loader = cva({
+const spinner = cva({
   base: {
     position: "absolute",
     left: "50%",
     top: "50%",
-    transform: "translate(-50%, -50%)",
+    width: "32px",
+    height: "32px",
+    // margins rather than a transform, which the rotation animates
+    marginInlineStart: "-16px",
+    marginTop: "-16px",
+    animation: "spinnerRotate 1.4s linear infinite",
+
+    "& circle": {
+      fill: "none",
+      stroke: "var(--md-sys-color-primary)",
+      strokeWidth: 4,
+      strokeLinecap: "round",
+      animation: "spinnerDash 1.4s ease-in-out infinite",
+    },
   },
 });

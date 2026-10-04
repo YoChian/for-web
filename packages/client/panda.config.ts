@@ -93,6 +93,26 @@ export default defineConfig({
             transform: "translateY(0)",
           },
         },
+        // fork customization: indeterminate spinner
+        spinnerRotate: {
+          "100%": {
+            transform: "rotate(360deg)",
+          },
+        },
+        spinnerDash: {
+          "0%": {
+            strokeDasharray: "1, 200",
+            strokeDashoffset: "0",
+          },
+          "50%": {
+            strokeDasharray: "89, 200",
+            strokeDashoffset: "-35",
+          },
+          "100%": {
+            strokeDasharray: "89, 200",
+            strokeDashoffset: "-124",
+          },
+        },
       },
     },
   },
