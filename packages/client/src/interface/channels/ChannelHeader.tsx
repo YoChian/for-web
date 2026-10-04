@@ -303,6 +303,22 @@ const SearchBox = styled("input", {
     paddingInline: "16px",
     borderRadius: "var(--borderRadius-full)",
     background: "var(--md-sys-color-surface-container-high)",
+
+    // fork customization: compact box that widens while in use, like Discord
+    _discord: {
+      height: "28px",
+      width: "160px",
+      paddingInline: "8px",
+      borderRadius: "var(--borderRadius-sm)",
+      background: "var(--md-sys-color-surface-dim)",
+      fontSize: "14px",
+      outline: "none",
+      transition: "width 0.25s ease",
+
+      "&:focus, &:not(:placeholder-shown)": {
+        width: "240px",
+      },
+    },
   },
 });
 
