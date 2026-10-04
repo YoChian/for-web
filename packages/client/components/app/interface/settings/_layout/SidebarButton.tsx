@@ -69,7 +69,8 @@ const SidebarButtonBase = styled("a", {
   variants: {
     "aria-selected": {
       true: {
-        background: "var(--md-sys-color-primary-container)",
+        // fork customization: neutral selection, as in MenuButton
+        background: "var(--md-sys-color-secondary-container)",
       },
     },
   },

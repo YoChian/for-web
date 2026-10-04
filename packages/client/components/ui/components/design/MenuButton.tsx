@@ -202,9 +202,11 @@ const base = cva({
         "--color": "var(--md-sys-color-on-surface)",
         background: "transparent",
       },
+      // fork customization: neutral selection (Material 3 navigation uses
+      // secondary-container; the Discord preset maps it to grey)
       selected: {
-        "--color": "var(--md-sys-color-on-primary-container)",
-        background: "var(--md-sys-color-primary-container)",
+        "--color": "var(--md-sys-color-on-secondary-container)",
+        background: "var(--md-sys-color-secondary-container)",
       },
     },
   },

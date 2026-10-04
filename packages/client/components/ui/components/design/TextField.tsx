@@ -150,7 +150,8 @@ const input = cva({
   variants: {
     variant: {
       filled: {
-        background: "var(--md-sys-color-surface-container-lowest)",
+        // a step darker than the content behind it, like Discord inputs
+        background: "var(--md-sys-color-surface-dim)",
         borderColor:
           "color-mix(in srgb, 40% var(--md-sys-color-outline-variant), transparent)",
 

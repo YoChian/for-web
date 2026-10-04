@@ -15,7 +15,13 @@ export type TypeTheme = {
   /**
    * Base theme preset
    */
-  preset: "you";
+  preset: "you" | "discord";
+
+  /**
+   * Whether this install has been switched to the Discord preset
+   * (fork customization, applied once to existing installs)
+   */
+  forkDiscordApplied: boolean;
 
   /**
    * Light/dark mode
@@ -83,7 +89,7 @@ export type SelectedTheme = Pick<
   | "messageSize"
   | "messageGroupSpacing"
 > & {
-  preset: "you";
+  preset: TypeTheme["preset"];
   darkMode: boolean;
 
   accent: string;
@@ -131,10 +137,12 @@ export class Theme extends AbstractStore<"theme", TypeTheme> {
    */
   default(): TypeTheme {
     return {
-      preset: "you",
-      mode: "system",
+      // fork customization: Discord-like dark theme by default
+      preset: "discord",
+      forkDiscordApplied: true,
+      mode: "dark",
 
-      m3Accent: "#5470ec",
+      m3Accent: "#5865f2",
       m3Contrast: 0.0,
       m3Variant: "tonal_spot",
 
@@ -153,11 +161,15 @@ export class Theme extends AbstractStore<"theme", TypeTheme> {
   clean(input: Partial<TypeTheme>): TypeTheme {
     const data: TypeTheme = this.default();
 
-    if (["light", "dark", "system"].includes(input.mode!)) {
+    // fork customization: installs from before the Discord preset keep the
+    // new defaults for preset, mode and the untouched default accent once
+    const keepChoices = input.forkDiscordApplied === true;
+
+    if (keepChoices && ["light", "dark", "system"].includes(input.mode!)) {
       data.mode = input.mode!;
     }
 
-    if (["you", "neutral"].includes(input.preset!)) {
+    if (keepChoices && ["you", "neutral", "discord"].includes(input.preset!)) {
       data.preset = input.preset!;
     }
 
@@ -167,7 +179,10 @@ export class Theme extends AbstractStore<"theme", TypeTheme> {
 
     if (
       input.m3Accent &&
-      input.m3Accent.match(/#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})/)
+      input.m3Accent.match(
+        /#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})/,
+      ) &&
+      (keepChoices || input.m3Accent.toLowerCase() !== "#5470ec")
     ) {
       data.m3Accent = input.m3Accent;
     }
@@ -225,13 +240,14 @@ export class Theme extends AbstractStore<"theme", TypeTheme> {
 
     switch (opts.preset) {
       case "you":
+      case "discord":
         return {
           blur: opts.blur,
           interfaceFont: opts.interfaceFont,
           monospaceFont: opts.monospaceFont,
           messageSize: opts.messageSize,
           messageGroupSpacing: opts.messageGroupSpacing,
-          preset: "you",
+          preset: opts.preset,
           darkMode:
             opts.mode === "dark" ||
             (opts.mode === "system" && this.prefersDark()),

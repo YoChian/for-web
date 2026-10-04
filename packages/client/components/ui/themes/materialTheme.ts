@@ -15,6 +15,8 @@ import {
 
 import { SelectedTheme, TypeTheme } from "@revolt/state/stores/Theme";
 
+import { generateDiscordScheme } from "./discordTheme";
+
 /**
  * Generate the Material variables from the given properties
  *
@@ -26,13 +28,16 @@ export function createMaterialColourVariables<P extends string>(
 ): addPrefixToObject<MaterialColours, P> {
   switch (theme.preset) {
     case "you":
+    case "discord":
       return Object.entries(
-        generateMaterialYouScheme(
-          theme.accent,
-          theme.darkMode,
-          theme.contrast,
-          theme.variant,
-        ),
+        theme.preset === "discord"
+          ? generateDiscordScheme(theme.accent, theme.darkMode)
+          : generateMaterialYouScheme(
+              theme.accent,
+              theme.darkMode,
+              theme.contrast,
+              theme.variant,
+            ),
       ).reduce(
         (d, [key, value]) => ({
           ...d,
@@ -74,7 +79,7 @@ type _addSuffixToObject<T, S extends string> = {
   [K in keyof T as K extends string ? `${K}${S}` : never]: T[K];
 };
 
-type MaterialColours = {
+export type MaterialColours = {
   primary: string;
   "on-primary": string;
   "primary-container": string;
