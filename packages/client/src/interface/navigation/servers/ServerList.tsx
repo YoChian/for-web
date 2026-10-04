@@ -441,7 +441,7 @@ export const ServerList = (props: Props) => {
             </Portal>
           )}
         </Show>
-        <Tooltip placement="right" content={"Create or join a server"}>
+        <Tooltip placement="right" content={t`Create or join a server`}>
           <a
             class={entryContainer()}
             onClick={() => props.onCreateOrJoinServer()}

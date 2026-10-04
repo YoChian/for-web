@@ -461,7 +461,7 @@ export function MessageContainer(props: Props) {
                     />
                   }
                 >
-                  (edited)
+                  {t`(edited)`}
                 </Show>
               </div>
             </Match>
@@ -527,7 +527,7 @@ export function MessageContainer(props: Props) {
                       },
                     }}
                   >
-                    (edited)
+                    {t`(edited)`}
                   </span>
                 </Show>
               </NonBreakingText>
