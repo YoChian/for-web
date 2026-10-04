@@ -30,6 +30,12 @@ const Base = styled("div", {
     boxShadow: "0 0 3px var(--md-sys-color-shadow)",
 
     userSelect: "none",
+
+    // fork customization: inset items, like Discord menus
+    _discord: {
+      padding: "6px 8px",
+      borderRadius: "var(--borderRadius-sm)",
+    },
   },
 });
 
@@ -67,12 +73,30 @@ export const ContextMenuItem = styled("a", {
     "& span:not([aria-hidden='true'])": {
       flexGrow: 1,
     },
+
+    // fork customization: accent highlight, like Discord menus
+    _discord: {
+      paddingInline: "8px",
+      borderRadius: "var(--borderRadius-xs)",
+
+      "&:hover": {
+        color: "var(--md-sys-color-on-primary)",
+        fill: "var(--md-sys-color-on-primary)",
+        background: "var(--md-sys-color-primary)",
+      },
+    },
   },
   variants: {
     selected: {
       true: {
         background:
           "color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)",
+
+        _discord: {
+          color: "var(--md-sys-color-on-primary)",
+          fill: "var(--md-sys-color-on-primary)",
+          background: "var(--md-sys-color-primary)",
+        },
       },
       false: {},
     },
@@ -100,6 +124,14 @@ export const ContextMenuItem = styled("a", {
       true: {
         fill: "var(--md-sys-color-error)",
         color: "var(--md-sys-color-error)",
+
+        _discord: {
+          "&:hover": {
+            color: "var(--md-sys-color-on-error)",
+            fill: "var(--md-sys-color-on-error)",
+            background: "var(--md-sys-color-error)",
+          },
+        },
       },
     },
   },
