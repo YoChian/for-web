@@ -60,7 +60,7 @@ export function ParticipantTile(props: TileProps) {
   });
 
   const isScreenShareAudioUserMuted = () =>
-    state.voice.getScreenShareMuted(user().user!.id)
+    !user().user!.self && state.voice.getScreenShareMuted(user().user!.id)
       ? "by-user"
       : isScreenShareAudioMuted() || false;
 
@@ -90,7 +90,7 @@ export function ParticipantTile(props: TileProps) {
           tile({
             speaking: !isScreenShare() && isSpeaking(),
             video: isVideo() || isScreenShare(),
-            fullscreen: voice.fullscreen(),
+            fullscreen: voice.layout() === "fullscreen",
             ...props,
           }) + (isScreenShare() ? " vc_tile group" : " vc_tile")
         }

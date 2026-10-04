@@ -9,7 +9,7 @@ import {
   onCleanup,
 } from "solid-js";
 
-import { Trans, useLingui } from "@lingui-solid/solid/macro";
+import { Trans, useLingui } from "@lingui/solid/macro";
 import MdFlip from "@material-design-icons/svg/outlined/flip.svg?component-solid";
 import MdRestartAlt from "@material-design-icons/svg/outlined/restart_alt.svg?component-solid";
 import MdZoomIn from "@material-design-icons/svg/outlined/zoom_in.svg?component-solid";
@@ -18,8 +18,8 @@ import { Server } from "stoat.js";
 import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
-import { CONFIGURATION } from "@revolt/common";
 import { useError } from "@revolt/i18n";
+import { useInstance } from "@revolt/instance";
 import {
   Column,
   Dialog,
@@ -52,6 +52,7 @@ export function CreateEmojiModal(
 ) {
   const { t } = useLingui();
   const err = useError();
+  const instance = useInstance();
 
   const [file, setFile] = createSignal<File | null>(props.file ?? null);
   const [objectUrl, setObjectUrl] = createSignal<string>();
@@ -102,23 +103,13 @@ export function CreateEmojiModal(
   const slotsRemaining = () => {
     const server = selectedServer();
     return server
-      ? CONFIGURATION.MAX_EMOJI - server.emojis.length
+      ? instance.globalLimits.server_emoji - server.emojis.length
       : undefined;
   };
 
-  /** Emoji upload size limit as advertised by the instance, if known */
-  function emojiSizeLimit(): number | undefined {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const limits = (props.client.configuration as any)?.features?.limits;
-      return (
-        limits?.default?.file_upload_size_limits?.emojis ??
-        limits?.default?.file_upload_size_limit?.emojis
-      );
-    } catch {
-      return undefined;
-    }
-  }
+  /** Emoji upload size limit as advertised by the instance */
+  const emojiSizeLimit = () =>
+    instance.limits().file_upload_size_limits["emojis"];
 
   function loadFile(picked: File) {
     setError(undefined);
@@ -267,7 +258,7 @@ export function CreateEmojiModal(
       body.append("file", payload, isGif() ? file()!.name : `${name()}.png`);
 
       const [key, value] = props.client.authenticationHeader;
-      const res = await fetch(`${CONFIGURATION.DEFAULT_MEDIA_URL}/emojis`, {
+      const res = await fetch(`${instance.mediaUrl}/emojis`, {
         method: "POST",
         body,
         headers: { [key]: value },

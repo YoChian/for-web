@@ -287,25 +287,32 @@ const button = cva({
     /**
      * Expressive sizes
      */
+    // fork customization: `--max-radius` is flattened onto the token scale
+    // instead of half the height, so round and connected shapes are not pills
     size: {
       xs: {
         height: "32px",
+        "--max-radius": "var(--borderRadius-md)",
         "--padding-inline": "12px",
       },
       sm: {
         height: "40px",
+        "--max-radius": "var(--borderRadius-md)",
         "--padding-inline": "16px",
       },
       md: {
         height: "56px",
+        "--max-radius": "var(--borderRadius-lg)",
         "--padding-inline": "24px",
       },
       lg: {
         height: "96px",
+        "--max-radius": "var(--borderRadius-xl)",
         "--padding-inline": "48px",
       },
       xl: {
         height: "136px",
+        "--max-radius": "var(--borderRadius-xl)",
         "--padding-inline": "64px",
       },
 
@@ -313,6 +320,7 @@ const button = cva({
       icon: {
         width: "36px",
         height: "36px",
+        "--max-radius": "var(--borderRadius-lg)",
       },
       /**
        * @deprecated
@@ -396,65 +404,72 @@ const button = cva({
       css: {
         "--color":
           "color-mix(in srgb, 38% var(--md-sys-color-on-surface), transparent)",
-        background:
-          "color-mix(in srgb, 10% var(--md-sys-color-on-surface), transparent)",
+        background: "transparent",
       },
     },
 
     // border radius for different squared sizes
     {
       shape: "square",
-      size: ["sm", "xs"],
+      size: "xs",
       css: {
-        borderRadius: "var(--borderRadius-md)",
+        borderRadius: "var(--borderRadius-xs)",
+      },
+    },
+    {
+      shape: "square",
+      size: "sm",
+      css: {
+        borderRadius: "var(--borderRadius-sm)",
       },
     },
     {
       shape: "square",
       size: "md",
       css: {
+        borderRadius: "var(--borderRadius-md)",
+      },
+    },
+    {
+      shape: "square",
+      size: "lg",
+      css: {
         borderRadius: "var(--borderRadius-lg)",
       },
     },
     {
       shape: "square",
-      size: ["xl", "lg"],
+      size: "xl",
       css: {
         borderRadius: "var(--borderRadius-xl)",
       },
     },
 
-    // fork customization: flattened Discord-like shapes — rounded pill
-    // sizes and asymmetric "connected" morphs collapse to the token scale
+    // hard-code values for rounded connected group shapes
     {
       shape: "round",
-      size: ["sm", "xs"],
       css: {
-        borderRadius: "var(--borderRadius-md)",
-      },
-    },
-    {
-      shape: "round",
-      size: ["md"],
-      css: {
-        borderRadius: "var(--borderRadius-lg)",
-      },
-    },
-    {
-      shape: "round",
-      size: ["xl", "lg"],
-      css: {
-        borderRadius: "var(--borderRadius-xl)",
+        borderRadius: "var(--max-radius)",
       },
     },
 
     // left-side connected group
     {
       shape: "square",
-      size: ["sm", "xs"],
+      size: "xs",
       group: "connected-start",
       css: {
-        borderRadius: "var(--borderRadius-md)",
+        borderRadius:
+          "var(--max-radius) var(--borderRadius-xs) var(--borderRadius-xs) var(--max-radius)",
+      },
+    },
+    {
+      shape: "square",
+      size: "sm",
+      group: "connected-start",
+      css: {
+        borderRadius:
+          "var(--max-radius) var(--borderRadius-sm) var(--borderRadius-sm) var(--max-radius)",
       },
     },
     {
@@ -462,25 +477,46 @@ const button = cva({
       size: "md",
       group: "connected-start",
       css: {
-        borderRadius: "var(--borderRadius-lg)",
+        borderRadius:
+          "var(--max-radius) var(--borderRadius-md) var(--borderRadius-md) var(--max-radius)",
       },
     },
     {
       shape: "square",
-      size: ["xl", "lg"],
+      size: "lg",
       group: "connected-start",
       css: {
-        borderRadius: "var(--borderRadius-xl)",
+        borderRadius:
+          "var(--max-radius) var(--borderRadius-lg) var(--borderRadius-lg) var(--max-radius)",
+      },
+    },
+    {
+      shape: "square",
+      size: "xl",
+      group: "connected-start",
+      css: {
+        borderRadius:
+          "var(--max-radius) var(--borderRadius-xl) var(--borderRadius-xl) var(--max-radius)",
       },
     },
 
     // right-side connected group
     {
       shape: "square",
-      size: ["sm", "xs"],
+      size: "xs",
       group: "connected-end",
       css: {
-        borderRadius: "var(--borderRadius-md)",
+        borderRadius:
+          "var(--borderRadius-xs) var(--max-radius) var(--max-radius) var(--borderRadius-xs)",
+      },
+    },
+    {
+      shape: "square",
+      size: "sm",
+      group: "connected-end",
+      css: {
+        borderRadius:
+          "var(--borderRadius-sm) var(--max-radius) var(--max-radius) var(--borderRadius-sm)",
       },
     },
     {
@@ -488,15 +524,26 @@ const button = cva({
       size: "md",
       group: "connected-end",
       css: {
-        borderRadius: "var(--borderRadius-lg)",
+        borderRadius:
+          "var(--borderRadius-md) var(--max-radius) var(--max-radius) var(--borderRadius-md)",
       },
     },
     {
       shape: "square",
-      size: ["xl", "lg"],
+      size: "lg",
       group: "connected-end",
       css: {
-        borderRadius: "var(--borderRadius-xl)",
+        borderRadius:
+          "var(--borderRadius-lg) var(--max-radius) var(--max-radius) var(--borderRadius-lg)",
+      },
+    },
+    {
+      shape: "square",
+      size: "xl",
+      group: "connected-end",
+      css: {
+        borderRadius:
+          "var(--borderRadius-xl) var(--max-radius) var(--max-radius) var(--borderRadius-xl)",
       },
     },
 

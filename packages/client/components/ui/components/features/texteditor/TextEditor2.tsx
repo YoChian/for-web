@@ -225,13 +225,14 @@ export function TextEditor2(props: Props) {
       () => props.nodeReplacement,
       (value) => {
         if (value) {
-          view.focus();
-
           const text = value[0];
           if (text !== "_focus") {
+            if (!isMobile) view.focus();
             view.dispatch(view.state.replaceSelection(text));
             if (text) props.onTyping?.();
             props.onChange(view.state.doc.toString());
+          } else {
+            view.focus();
           }
         }
       },
@@ -349,6 +350,7 @@ const editor = css({
     padding: "0.5px 4px",
 
     color: "#c9d1d9",
+    caretColor: "currentColor",
     background: "#0d1117",
   },
 

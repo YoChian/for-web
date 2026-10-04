@@ -1,6 +1,6 @@
 import { For, Show, createMemo } from "solid-js";
 
-import { useLingui } from "@lingui-solid/solid/macro";
+import { useLingui } from "@lingui/solid/macro";
 import { API } from "stoat.js";
 import { styled } from "styled-system/jsx";
 
@@ -142,7 +142,7 @@ function Reaction(props: {
   removeReaction(id: string): void;
 }) {
   const { t } = useLingui();
-  const users = useUsers(() => [...(props.users?.values() ?? [])]);
+  const users = useUsers(() => [...(props.users?.values() ?? [])], false, true);
 
   /**
    * Handle toggling reaction

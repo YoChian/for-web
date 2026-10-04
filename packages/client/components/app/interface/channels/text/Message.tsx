@@ -1,29 +1,28 @@
 import {
   Accessor,
+  createContext,
+  createMemo,
+  createSignal,
   For,
   JSX,
   Match,
+  onMount,
   Show,
   Switch,
-  createContext,
-  createSignal,
-  onMount,
   useContext,
 } from "solid-js";
 
-import { useLingui } from "@lingui-solid/solid/macro";
-import {
-  ImageEmbed,
-  Message as MessageInterface,
-  WebsiteEmbed,
-} from "stoat.js";
+import { useLingui } from "@lingui/solid/macro";
+import { Message as MessageInterface } from "stoat.js";
 import { cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 import { decodeTime } from "ulid";
 
 import { useClient } from "@revolt/client";
+import { isGif } from "@revolt/common/lib/gifs";
 import { useTime } from "@revolt/i18n";
 import { Markdown } from "@revolt/markdown";
+import { startsWithPackPUA } from "@revolt/markdown/emoji/UnicodeEmoji";
 import { useState } from "@revolt/state";
 import {
   Attachment,
@@ -38,6 +37,7 @@ import {
   Tooltip,
   Username,
 } from "@revolt/ui";
+import { MediaPickerProps } from "@revolt/ui/components/features/messaging/composition/picker/CompositionMediaPicker";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
 import { MessageContextMenu } from "../../../menus/MessageContextMenu";
@@ -46,8 +46,7 @@ import {
   floatingUserMenusFromMessage,
 } from "../../../menus/UserContextMenu";
 
-import { startsWithPackPUA } from "@revolt/markdown/emoji/UnicodeEmoji";
-import { MediaPickerProps } from "@revolt/ui/components/features/messaging/composition/picker/CompositionMediaPicker";
+import { createIsTimedOut } from "@revolt/common/lib/createIsTimedOut";
 import { EditMessage } from "./EditMessage";
 
 /**
@@ -55,11 +54,6 @@ import { EditMessage } from "./EditMessage";
  */
 const RE_URL =
   /[(http(s)?)://(www.)?a-zA-Z0-9@:%._+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_+.~#?&//=]*)/;
-
-/**
- * Regex for matching gif providers
- */
-const GIF_PROVIDERS_REGEX = /^https:\/\/(tenor\.com|gifbox\.me|giphy\.com)/;
 
 interface Props {
   /**
@@ -85,7 +79,7 @@ interface Props {
   /**
    * Whether this message is a link
    */
-  isLink?: boolean;
+  isLink?: boolean | "hide";
 }
 
 interface MessageContextShape {
@@ -132,17 +126,7 @@ export function Message(props: Props) {
   const isOnlyGIF = () =>
     props.message.embeds &&
     props.message.embeds.length === 1 &&
-    ((props.message.embeds[0].type === "Website" &&
-      ((props.message.embeds[0] as WebsiteEmbed).specialContent?.type ===
-        "GIF" ||
-        !!(
-          (props.message.embeds[0] as WebsiteEmbed).originalUrl ||
-          (props.message.embeds[0] as WebsiteEmbed).url
-        )?.match(GIF_PROVIDERS_REGEX))) ||
-      (props.message.embeds[0].type === "Image" &&
-        !!(props.message.embeds[0] as ImageEmbed).url?.match(
-          GIF_PROVIDERS_REGEX,
-        ))) &&
+    isGif(props.message.embeds[0]) &&
     props.message.content &&
     !props.message.content.replace(RE_URL, "").length;
 
@@ -157,6 +141,19 @@ export function Message(props: Props) {
    * @param emoji Emoji
    */
   const unreact = (emoji: string) => props.message.unreact(emoji);
+
+  // Derive pronouns member takes precedence over author
+  const pronouns = () =>
+    props.message.member?.pronouns ?? props.message.author?.pronouns;
+
+  const timedOut = createIsTimedOut(() => props.message.member?.timeout);
+
+  const moderationPerms = createMemo(() =>
+    props.message.member?.server?.member?.hasPermission(
+      props.message.member!.server! ?? props.message.channel!,
+      "TimeoutMembers",
+    ),
+  );
 
   return (
     <MessageContext message={props.message} reactPicker={reactPicker}>
@@ -192,6 +189,7 @@ export function Message(props: Props) {
             />
           </div>
         }
+        pronouns={pronouns()}
         contextMenu={
           props.editing
             ? undefined
@@ -284,6 +282,16 @@ export function Message(props: Props) {
                 </Symbol>
               </Tooltip>
             </Match>
+            <Match when={timedOut() && moderationPerms()}>
+              <Tooltip
+                content={t`Timed Out until ${props.message.member!.timeout!.toLocaleString()}`}
+                placement="top"
+              >
+                <Symbol size={16} color="var(--md-sys-color-error)">
+                  timer_off
+                </Symbol>
+              </Tooltip>
+            </Match>
             <Match
               when={
                 props.message.authorId &&
@@ -346,6 +354,7 @@ export function Message(props: Props) {
           />
         </Show>
         <CompositionMediaPicker
+          channel={props.message.channel}
           onMessage={(content) =>
             props.message?.channel?.sendMessage({
               content,

@@ -1,7 +1,7 @@
 import { BiRegularBlock } from "solid-icons/bi";
 import { Accessor, JSX, Match, Show, Switch, onMount } from "solid-js";
 
-import { Trans } from "@lingui-solid/solid/macro";
+import { Trans } from "@lingui/solid/macro";
 import { styled } from "styled-system/jsx";
 
 import { Row } from "@revolt/ui";
@@ -75,6 +75,11 @@ interface Props {
    * Whether sending messages is allowed
    */
   sendingAllowed: boolean;
+
+  /**
+   * Whether the user is currently timed out in this channel/server
+   */
+  timeoutActive?: boolean;
 
   /**
    * Auto complete config
@@ -230,7 +235,7 @@ export function MessageBox(props: Props) {
     <Parent>
       <Base hasActionsAppend={props.hasActionsAppend}>
         <Switch fallback={props.actionsStart}>
-          <Match when={!props.sendingAllowed}>
+          <Match when={props.timeoutActive || !props.sendingAllowed}>
             <InlineIcon>
               <Blocked>
                 <BiRegularBlock size={24} />
@@ -255,6 +260,13 @@ export function MessageBox(props: Props) {
             </>
           }
         >
+          <Match when={props.timeoutActive}>
+            <Blocked align noPad>
+              <Trans>
+                You are timed out and can't send messages right now.
+              </Trans>
+            </Blocked>
+          </Match>
           <Match when={!props.sendingAllowed}>
             <Blocked align noPad>
               <Trans>

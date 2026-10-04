@@ -1,28 +1,74 @@
-import { Trans } from "@lingui-solid/solid/macro";
+import { Trans } from "@lingui/solid/macro";
+import { Show } from "solid-js";
+import { styled } from "styled-system/jsx";
 
-import { useApi, useClient, useClientLifecycle } from "@revolt/client";
-import { CONFIGURATION } from "@revolt/common";
+import { useApi, useClientLifecycle } from "@revolt/client";
+import { useInstance } from "@revolt/instance";
 import { useModals } from "@revolt/modal";
-import { useNavigate, useParams } from "@revolt/routing";
-import { Button, Row, iconSize } from "@revolt/ui";
+import { A, useNavigate, useParams } from "@revolt/routing";
+import { Button, iconSize } from "@revolt/ui";
+import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
 import MdArrowBack from "@material-design-icons/svg/filled/arrow_back.svg?component-solid";
 
-import { Show } from "solid-js";
 import { FlowTitle } from "./Flow";
 import { setFlowCheckEmail } from "./FlowCheck";
 import { Fields, Form } from "./Form";
+
+const BackAction = styled("div", {
+  base: {
+    width: "100%",
+
+    "& a, & button": {
+      width: "100%",
+    },
+
+    "& button": {
+      gap: "4px",
+    },
+  },
+});
+
+/**
+ * Reassurance shown while typing an email address to sign up with
+ */
+function EmailPrivacyHint() {
+  return (
+    <>
+      <Symbol size={20}>lock</Symbol>
+      <div>
+        <strong>
+          <Trans>Your email stays private</Trans>
+        </strong>
+        <p>
+          <Trans>
+            We only use it to verify your account and help you get back in if
+            you're ever locked out. We'll never sell it or send you spam.
+          </Trans>
+        </p>
+        <a
+          href="https://stoat.chat/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          tabIndex={-1} // redundant for kb nav -> another link in footer
+        >
+          <Trans>Privacy policy</Trans>
+        </a>
+      </div>
+    </>
+  );
+}
 
 /**
  * Flow for creating a new account
  */
 export default function FlowCreate() {
   const api = useApi();
-  const getClient = useClient();
   const navigate = useNavigate();
   const { code } = useParams();
   const modals = useModals();
   const { login } = useClientLifecycle();
+  const { config, isStoat } = useInstance();
 
   /**
    * Create an account
@@ -41,8 +87,7 @@ export default function FlowCreate() {
       ...(invite ? { invite } : {}),
     });
 
-    const client = getClient();
-    if (client.configuration && !client.configuration.features.email) {
+    if (!config.features.email) {
       await login(
         {
           email,
@@ -57,34 +102,34 @@ export default function FlowCreate() {
     }
   }
 
-  const isInviteOnly = () => {
-    const client = getClient();
-    if (client.configured()) {
-      return client.configuration?.features.invite_only;
-    }
-    return false;
-  };
-
   return (
     <>
-      <FlowTitle subtitle={<Trans>Create an account</Trans>} emoji="wave">
-        <Trans>Hello!</Trans>
+      <FlowTitle
+        subtitle={<Trans>Set up your account and make yourself at home.</Trans>}
+      >
+        <Trans>Join Stoat</Trans>
       </FlowTitle>
-      <Form onSubmit={create} captcha={CONFIGURATION.HCAPTCHA_SITEKEY}>
-        <Fields fields={["email", "new-password"]} />
-        <Show when={isInviteOnly()}>
+      <Form onSubmit={create} captcha={config.features.captcha.key}>
+        <Fields
+          fields={[
+            // Stoat's privacy policy doesn't cover third party instances
+            isStoat ? { field: "email", hint: <EmailPrivacyHint /> } : "email",
+            "new-password",
+          ]}
+        />
+        <Show when={config.features.invite_only}>
           <Fields fields={[{ field: "invite", value: code }]} />
         </Show>
-        <Row justify>
-          <a href="..">
+        <Button type="submit" size="md">
+          <Trans>Create account</Trans>
+        </Button>
+        <BackAction>
+          <A href="..">
             <Button variant="text">
               <MdArrowBack {...iconSize("1.2em")} /> <Trans>Back</Trans>
             </Button>
-          </a>
-          <Button type="submit">
-            <Trans>Register</Trans>
-          </Button>
-        </Row>
+          </A>
+        </BackAction>
       </Form>
       {import.meta.env.DEV && (
         <div

@@ -1,6 +1,6 @@
 import { Match, Show, Switch, createMemo, splitProps } from "solid-js";
 
-import { Trans, useLingui } from "@lingui-solid/solid/macro";
+import { Trans, useLingui } from "@lingui/solid/macro";
 import { VirtualContainer } from "@minht11/solid-virtual-container";
 import { Channel } from "stoat.js";
 import { css } from "styled-system/css";
@@ -8,6 +8,8 @@ import { styled } from "styled-system/jsx";
 
 import { ChannelContextMenu, UserContextMenu } from "@revolt/app";
 import { useClient } from "@revolt/client";
+import { useDevice } from "@revolt/common";
+import Instance from "@revolt/instance/Instance";
 import { TextWithEmoji } from "@revolt/markdown";
 import { useModals } from "@revolt/modal";
 import { useLocation, useNavigate } from "@revolt/routing";
@@ -18,14 +20,10 @@ import {
   OverflowingText,
   Tooltip,
   UserStatus,
-  iconSize,
   typography,
 } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
-import MdClose from "@material-design-icons/svg/outlined/close.svg?component-solid";
-
-import { useDevice } from "@revolt/common";
 import { SidebarBase } from "./common";
 
 interface Props {
@@ -71,15 +69,19 @@ export const HomeSidebar = (props: Props) => {
     <SidebarBase class="channel_bar home">
       <div ref={scrollTargetElement} use:invisibleScrollable>
         <List>
-          <SidebarTitle>
+          <Header>
             <Trans>Conversations</Trans>
-          </SidebarTitle>
+          </Header>
 
           <MenuButton
             href="/app"
             size="normal"
             icon={<Symbol>home</Symbol>}
-            attention={location.pathname === "/app" ? "selected" : "normal"}
+            attention={
+              Instance.relPath(location.pathname) === "/app"
+                ? "selected"
+                : "normal"
+            }
           >
             <ButtonTitle>
               <Trans>Home</Trans>
@@ -92,7 +94,11 @@ export const HomeSidebar = (props: Props) => {
             href="/friends"
             size="normal"
             icon={<Symbol>group</Symbol>}
-            attention={location.pathname === "/friends" ? "selected" : "normal"}
+            attention={
+              Instance.relPath(location.pathname) === "/friends"
+                ? "selected"
+                : "normal"
+            }
           >
             <ButtonTitle>
               <Trans>Friends</Trans>
@@ -192,15 +198,20 @@ export const HomeSidebar = (props: Props) => {
   );
 };
 
-/**
- * Sidebar title
- */
-const SidebarTitle = styled("p", {
+export const Header = styled("div", {
   base: {
-    paddingBlock: "calc(var(--gap-md) + 15px)",
-    paddingInline: "var(--gap-md)",
-
-    ...typography.raw({ class: "title" }),
+    alignItems: "center",
+    fontWeight: 600,
+    userSelect: "none",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    height: "48px",
+    lineHeight: "48px",
+    verticalAlign: "middle",
+    margin: "var(--gap-md)",
+    marginLeft: "var(--gap-lg)",
+    color: "var(--md-sys-color-on-surface)",
+    backgroundColor: "var(--md-sys-color-surface-variant)",
   },
 });
 
@@ -326,21 +337,6 @@ function Entry(
           </Match>
         </Switch>
       }
-      actions={
-        <Show when={!local.isMobile}>
-          <a
-            onClick={(e) => {
-              e.preventDefault();
-              openModal({
-                type: "delete_channel",
-                channel: local.channel,
-              });
-            }}
-          >
-            <MdClose {...iconSize("18px")} />
-          </a>
-        </Show>
-      }
       use:floating={{
         contextMenu: () =>
           local.channel.type === "DirectMessage" ? (
@@ -397,7 +393,6 @@ function Entry(
  */
 const List = styled("div", {
   base: {
-    paddingLeft: "var(--gap-md)",
     width: "var(--layout-width-channel-sidebar)",
   },
 });

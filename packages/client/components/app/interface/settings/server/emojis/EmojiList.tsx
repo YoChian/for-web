@@ -1,6 +1,6 @@
 import { For, Show, createSignal } from "solid-js";
 
-import { Trans, useLingui } from "@lingui-solid/solid/macro";
+import { Trans, useLingui } from "@lingui/solid/macro";
 import MdDelete from "@material-design-icons/svg/outlined/delete.svg?component-solid";
 import MdEdit from "@material-design-icons/svg/outlined/edit.svg?component-solid";
 import { Emoji, Server } from "stoat.js";
@@ -8,7 +8,7 @@ import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import { useClient } from "@revolt/client";
-import { CONFIGURATION } from "@revolt/common";
+import { useInstance } from "@revolt/instance";
 import { useModals } from "@revolt/modal";
 import { Avatar, Button, Column, IconButton, Row, Text } from "@revolt/ui";
 
@@ -19,6 +19,7 @@ export function EmojiList(props: { server: Server }) {
   const { t } = useLingui();
   const client = useClient();
   const { openModal, showError } = useModals();
+  const instance = useInstance();
 
   // id of the emoji currently being renamed
   const [editingId, setEditingId] = createSignal<string>();
@@ -26,7 +27,7 @@ export function EmojiList(props: { server: Server }) {
   const [renamed, setRenamed] = createSignal<Record<string, string>>({});
 
   const slotsRemaining = () =>
-    CONFIGURATION.MAX_EMOJI - props.server.emojis.length;
+    instance.globalLimits.server_emoji - props.server.emojis.length;
 
   const displayName = (emoji: Emoji) => renamed()[emoji.id] ?? emoji.name;
 

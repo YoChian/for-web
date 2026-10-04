@@ -5,27 +5,29 @@ import {
   Channel,
   Client,
   Emoji,
-  File,
   ImageEmbed,
   Message,
   MFA,
   MFATicket,
+  ProtocolV1,
   PublicBot,
   PublicChannelInvite,
   Server,
   ServerMember,
   ServerRole,
   Session,
+  File as StoatFile,
   User,
   VideoEmbed,
 } from "stoat.js";
-import { ProtocolV1 } from "stoat.js/lib/events/v1";
 
 import type { SettingsConfigurations } from "@revolt/app";
 import { CategoryData } from "@revolt/app/menus/CategoryContextMenu";
+import { ServerFolder } from "@revolt/state/stores/ServerFolders";
 import { ScreenShareQualityName } from "@revolt/state/stores/Voice";
 
 import type { ChangelogResponse } from "./modals/Changelog";
+import { CropProcessOptions } from "./modals/CropProcess";
 
 export type Modals =
   | {
@@ -80,12 +82,9 @@ export type Modals =
       replace?: Emoji;
     }
   | {
-      type: "delete_emoji";
-      emoji: Emoji;
-    }
-  | {
       type: "create_channel";
       server: Server;
+      categoryId?: string;
       cb?: (channel: Channel) => void;
     }
   | {
@@ -140,6 +139,10 @@ export type Modals =
       message: Message;
     }
   | {
+      type: "pin_message";
+      message: Message;
+    }
+  | {
       type: "delete_server";
       server: Server;
     }
@@ -174,7 +177,7 @@ export type Modals =
       type: "image_viewer";
       embed?: ImageEmbed;
       gif?: VideoEmbed;
-      file?: File;
+      file?: StoatFile;
     }
   | {
       type: "join_server";
@@ -192,7 +195,8 @@ export type Modals =
       type: "mfa_enable_totp";
       identifier: string;
       secret: string;
-      callback: (code?: string) => void;
+      callback: (code?: string) => Promise<void>;
+      reject?: (reason?: string) => void;
     }
   | ({
       type: "mfa_flow";
@@ -325,6 +329,10 @@ export type Modals =
       category: CategoryData;
     }
   | {
+      type: "edit_server_folder";
+      folder: ServerFolder;
+    }
+  | {
       type: "remove_member";
       group: Channel;
       user: User;
@@ -352,4 +360,31 @@ export type Modals =
         image?: string;
       }[];
       onCancel: () => void;
+    }
+  | {
+      type: "timeout_member";
+      member: ServerMember;
+    }
+  | {
+      type: "remove_timeout";
+      member: ServerMember;
+    }
+  | {
+      type: "edit_bot_username";
+      bot: Bot;
+    }
+  | {
+      type: "edit_emoji";
+      emoji: Emoji;
+    }
+  | {
+      type: "delete_emoji";
+      emoji: Emoji;
+    }
+  | {
+      type: "crop";
+      options: CropProcessOptions;
+      files: File[];
+      resolve: (files: File[] | null) => void;
+      maxSize: number | undefined;
     };

@@ -18,11 +18,11 @@ import { flip, offset, shift } from "@floating-ui/dom";
 import { cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
+import { useDevice } from "@revolt/common";
 import { Button } from "@revolt/ui/components/design";
 import { Row } from "@revolt/ui/components/layout";
 
-import { Server } from "stoat.js";
-
+import { Channel } from "stoat.js";
 import { EmojiPicker } from "./EmojiPicker";
 import { GifPicker } from "./GifPicker";
 
@@ -49,10 +49,7 @@ interface Props {
    */
   onTextReplacement: (node: string) => void;
 
-  /**
-   * Server this composition belongs to, if any
-   */
-  server?: Server;
+  channel?: Channel;
 }
 
 export const CompositionMediaPickerContext = createContext(
@@ -97,12 +94,12 @@ export function CompositionMediaPicker(props: Props) {
               transition={{ duration: 0.2, easing: [0.87, 0, 0.13, 1] }}
             >
               <Picker
+                channel={props.channel}
                 anchor={() => altRef || anchor()}
                 show={show}
                 setShow={setShow}
                 onMessage={props.onMessage}
                 onTextReplacement={props.onTextReplacement}
-                server={props.server}
               />
             </Motion>
           </Portal>
@@ -113,14 +110,16 @@ export function CompositionMediaPicker(props: Props) {
 }
 
 function Picker(
-  props: Pick<Props, "onMessage" | "onTextReplacement" | "server"> & {
+  props: Pick<Props, "onMessage" | "onTextReplacement" | "channel"> & {
     anchor: Accessor<HTMLElement | undefined>;
     show: Accessor<"gif" | "emoji" | undefined>;
     setShow: Setter<"gif" | "emoji" | undefined>;
   },
 ) {
+  const device = useDevice();
+
   const [floating, setFloating] = createSignal<HTMLDivElement>();
-  const [fixed, setFixed] = createSignal(false);
+  const [fixed, setFixed] = createSignal(device.layout() === "phone");
 
   const position = useFloating(() => props.anchor(), floating, {
     placement: "top-end",
@@ -133,12 +132,20 @@ function Picker(
   function onResize() {
     const el = floating();
     if (!el) return;
+
+    //Phone layout (e.g. after rotating back to portrait) => pin to bottom
+    if (device.layout() === "phone") {
+      setFixed(true);
+      return;
+    }
+
     const rect = el.getBoundingClientRect();
 
     //Prevent overflow off-screen
     if (rect.right > innerWidth || rect.bottom > innerHeight) setFixed(true);
   }
   onMount(() => {
+    (document.activeElement as HTMLElement)?.blur(); //Hide keyboard
     addEventListener("mousedown", onMouseDown);
     addEventListener("resize", onResize);
     setTimeout(onResize, 1);
@@ -162,18 +169,27 @@ function Picker(
       }
     >
       <Container>
-        <Row justify class="CompositionButton">
-          <Button
-            groupActive={props.show() === "gif"}
-            onPress={() => props.setShow("gif")}
-            group="connected-start"
+        <Row gap="xs" justify class="CompositionButton">
+          <Show
+            when={!props.channel || props.channel.havePermission("SendEmbeds")}
           >
-            GIFs
-          </Button>
+            <Button
+              groupActive={props.show() === "gif"}
+              onPress={() => props.setShow("gif")}
+              group="connected-start"
+            >
+              GIFs
+            </Button>
+          </Show>
+
           <Button
             groupActive={props.show() === "emoji"}
             onPress={() => props.setShow("emoji")}
-            group="connected-end"
+            group={
+              !props.channel || props.channel.havePermission("SendEmbeds")
+                ? "connected-end"
+                : undefined
+            }
           >
             Emoji
           </Button>
@@ -184,7 +200,7 @@ function Picker(
             <GifPicker />
           </Match>
           <Match when={props.show() === "emoji"}>
-            <EmojiPicker server={props.server} />
+            <EmojiPicker server={props.channel?.server} />
           </Match>
         </Switch>
       </Container>
@@ -200,7 +216,8 @@ const Base = styled("div", {
     width: "400px",
     height: "400px",
     maxWidth: "100%",
-    maxHeight: "calc(100% - 72px)",
+    maxHeight: "calc(100% - max(env(keyboard-inset-height), 72px))",
+    marginBottom: "env(keyboard-inset-height)",
   },
 });
 

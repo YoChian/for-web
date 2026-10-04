@@ -23,7 +23,6 @@ import {
   Header,
   NewMessages,
   Text,
-  TypingIndicator,
   main,
 } from "@revolt/ui";
 import { VoiceChannelCallCardMount } from "@revolt/ui/components/features/voice/callCard/VoiceCallCard";
@@ -33,6 +32,7 @@ import { ChannelPageProps } from "../ChannelPage";
 
 import { Channel } from "stoat.js";
 import { MessageComposition } from "./Composition";
+import { isLargeServer } from "./largeServer";
 import { MemberSidebar } from "./MemberSidebar";
 import { TextSearchSidebar } from "./TextSearchSidebar";
 
@@ -125,8 +125,24 @@ export function TextChannel(props: ChannelPageProps) {
     }
   }
 
+  function onVisibilityChange() {
+    if (document.visibilityState === "visible") onFocus();
+  }
+
+  // Chromium + webkit
+  window.addEventListener("focus", onFocus);
+  // Gecko
   document.addEventListener("focus", onFocus);
-  onCleanup(() => document.removeEventListener("focus", onFocus));
+  // Mobile (eg. unlock screen)
+  document.addEventListener("visibilitychange", onVisibilityChange);
+  onCleanup(() => {
+    // Mobile
+    document.removeEventListener("visibilitychange", onVisibilityChange);
+    // Gecko
+    document.removeEventListener("focus", onFocus);
+    // Chromium + webkit
+    window.removeEventListener("focus", onFocus);
+  });
 
   // Register ack/jump latest
   createKeybind(KeybindAction.CHAT_JUMP_END, () => {
@@ -157,6 +173,20 @@ export function TextChannel(props: ChannelPageProps) {
     on(
       () => props.channel.id,
       () => setSidebarState({ state: "default" }),
+    ),
+  );
+
+  // If this is a server text channel, sync the members
+  // todo: useQuery
+  createEffect(
+    on(
+      () => props.channel.serverId,
+      (serverId, prevServerId) =>
+        // This effect tracks channel, not serverId, therefore we must ensure the old serverId
+        // is not the same as the current serverId
+        prevServerId !== serverId &&
+        props.channel.type === "TextChannel" &&
+        props.channel.server?.syncMembers(isLargeServer(props.channel.server)),
     ),
   );
 
@@ -198,12 +228,6 @@ export function TextChannel(props: ChannelPageProps) {
                 sentIds={pendingProps.ids}
               />
             )}
-            typingIndicator={
-              <TypingIndicator
-                users={props.channel.typing}
-                ownId={client().user!.id}
-              />
-            }
             highlightedMessageId={highlightMessageId}
             clearHighlightedMessage={() => navigate(".")}
             jumpToBottomRef={(ref) => (jumpToBottomRef = ref)}
@@ -241,6 +265,7 @@ export function TextChannel(props: ChannelPageProps) {
                 <MemberSidebar
                   channel={props.channel}
                   scrollTargetElement={sidebarScrollTargetElement}
+                  isLargeServer={isLargeServer(props.channel.server)}
                 />
               }
             >

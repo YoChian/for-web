@@ -1,43 +1,40 @@
-import { Trans } from "@lingui-solid/solid/macro";
+import { Trans } from "@lingui/solid/macro";
+import { useMutation } from "@tanstack/solid-query";
 
-import { Avatar, Dialog, DialogProps, Row, Text } from "@revolt/ui";
+import { Dialog, DialogProps } from "@revolt/ui";
 
 import { useModals } from "..";
 import { Modals } from "../types";
 
-/**
- * Confirm deletion of a server emoji
- */
 export function DeleteEmojiModal(
   props: DialogProps & Modals & { type: "delete_emoji" },
 ) {
   const { showError } = useModals();
 
+  const deleteEmoji = useMutation(() => ({
+    mutationFn: async () => {
+      await props.emoji.delete();
+    },
+    onError: showError,
+  }));
+
   return (
     <Dialog
       show={props.show}
       onClose={props.onClose}
-      title={<Trans>Delete this emoji?</Trans>}
+      title={<Trans>Delete :{props.emoji.name}:?</Trans>}
       actions={[
         { text: <Trans>Cancel</Trans> },
         {
           text: <Trans>Delete</Trans>,
-          onClick: () => {
-            props.emoji.delete().catch(showError);
-            return true;
-          },
+          onClick: () => deleteEmoji.mutateAsync(),
         },
       ]}
+      isDisabled={deleteEmoji.isPending}
     >
-      <Row align gap="lg">
-        <Avatar src={props.emoji.url} shape="rounded-square" size={48} />
-        <Text>:{props.emoji.name}:</Text>
-      </Row>
-      <Text class="label">
-        <Trans>
-          Messages using this emoji will no longer be able to display it.
-        </Trans>
-      </Text>
+      <Trans>
+        Deleting this emoji will disallow future use. All past uses will remain.
+      </Trans>
     </Dialog>
   );
 }

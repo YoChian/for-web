@@ -1,17 +1,22 @@
 import {
+  Accessor,
   JSX,
   Show,
   createContext,
+  createEffect,
+  createMemo,
   createSignal,
   onMount,
   useContext,
 } from "solid-js";
 import { SetStoreFunction, createStore } from "solid-js/store";
 
+import { createDateNow } from "@solid-primitives/date";
 import equal from "fast-deep-equal";
 import localforage from "localforage";
 
 import { SlideDrawer } from "@revolt/ui/components/navigation/SlideDrawer";
+
 import { AbstractStore, Store } from "./stores";
 import { Auth } from "./stores/Auth";
 import { Draft } from "./stores/Draft";
@@ -23,15 +28,18 @@ import { Locale } from "./stores/Locale";
 import { NotificationOptions } from "./stores/NotificationOptions";
 import { Ordering } from "./stores/Ordering";
 import { ReleaseNotes } from "./stores/ReleaseNotes";
+import { ServerFolders } from "./stores/ServerFolders";
 import { Settings } from "./stores/Settings";
 import { Sounds } from "./stores/Sounds";
 import { Sync } from "./stores/Sync";
 import { Theme } from "./stores/Theme";
 import { Voice } from "./stores/Voice";
 
-export { SyncWorker } from "./SyncWorker";
-
+export { ALLOWED_IMAGE_TYPES } from "./stores/Draft";
+export type { ResolvedEntry } from "./stores/Ordering";
+export type { ServerFolder } from "./stores/ServerFolders";
 export type { Sounds, TypeSounds } from "./stores/Sounds";
+export { SyncWorker } from "./SyncWorker";
 
 /**
  * Introduce some delay before writing state to disk
@@ -57,6 +65,18 @@ export class State {
   diagDrawer;
   setDiagDrawer;
 
+  /** A reactive Date() that updates once per minute */
+  datePerMinute: Accessor<Date> = createDateNow(6e4)[0];
+
+  /** A reactive Date() that updates only when the day changes */
+  datePerDay: Accessor<Date> = (() => {
+    const poll = createDateNow(1000)[0];
+    const [get, set] = createSignal();
+    createEffect(() => set(poll().getDay()));
+    const date = createMemo(() => (get(), new Date()));
+    return date;
+  })();
+
   // define all stores
   auth = new Auth(this);
   draft = new Draft(this);
@@ -67,6 +87,7 @@ export class State {
   locale = new Locale(this);
   notifications = new NotificationOptions(this);
   ordering = new Ordering(this);
+  "server-folders" = new ServerFolders(this);
   "release-notes" = new ReleaseNotes(this);
   settings = new Settings(this);
   sync = new Sync(this);

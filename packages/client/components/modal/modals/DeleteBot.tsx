@@ -1,4 +1,4 @@
-import { Trans } from "@lingui-solid/solid/macro";
+import { Trans } from "@lingui/solid/macro";
 import { useMutation } from "@tanstack/solid-query";
 
 import { useClient } from "@revolt/client";
@@ -29,7 +29,9 @@ export function DeleteBotModal(
     <Dialog
       show={props.show}
       onClose={props.onClose}
-      title={<Trans>Delete {props.bot.user!.displayName}?</Trans>}
+      title={
+        <Trans>Delete {props.bot.user?.displayName ?? props.bot.id}?</Trans>
+      }
       actions={[
         { text: <Trans>Cancel</Trans> },
         {

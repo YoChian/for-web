@@ -1,13 +1,24 @@
 import type { JSX } from "solid-js";
 
-import { I18nProvider as LinguiProvider } from "@lingui-solid/solid";
 import { i18n } from "@lingui/core";
+import { I18nProvider as LinguiProvider } from "@lingui/solid";
 
 import { type LocaleOptions, Language, Languages } from "./Languages";
 import { messages as en } from "./catalogs/en/messages";
 import { initTime, loadTimeLocale } from "./dayjs";
+import { updateDurationLocale } from "./durations";
 
 export function I18nProvider(props: { children: JSX.Element }) {
+  i18n.load({
+    en,
+  });
+
+  i18n.activate(Language.ENGLISH);
+
+  initTime();
+
+  updateDurationLocale(Language.ENGLISH);
+
   return <LinguiProvider i18n={i18n}>{props.children}</LinguiProvider>;
 }
 
@@ -33,6 +44,8 @@ export async function loadAndSwitchLocale(
     i18n.activate(key);
 
     loadTimeLocale(Languages[key], localeOptions);
+
+    updateDurationLocale(Language.ENGLISH);
   }
 }
 
@@ -74,18 +87,3 @@ export function browserPreferredLanguage() {
 
   return Language.ENGLISH;
 }
-
-/**
- * Initialise i18n engine
- */
-export function initI18n() {
-  i18n.load({
-    en,
-  });
-
-  i18n.activate("en");
-
-  initTime();
-}
-
-initI18n();

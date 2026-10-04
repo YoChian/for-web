@@ -1,24 +1,21 @@
-import { createCountdownFromNow } from "@solid-primitives/date";
 import {
-  For,
-  Match,
-  Show,
-  Switch,
   createEffect,
   createMemo,
   createSignal,
+  For,
   on,
   onCleanup,
+  Show,
 } from "solid-js";
 
-import { useLingui } from "@lingui-solid/solid/macro";
+import { useLingui } from "@lingui/solid/macro";
 import { Channel } from "stoat.js";
 
-import { styled } from "styled-system/jsx";
-
 import { useClient } from "@revolt/client";
-import { CONFIGURATION, debounce } from "@revolt/common";
-import { Keybind, KeybindAction, createKeybind } from "@revolt/keybinds";
+import { debounce } from "@revolt/common";
+import { createIsTimedOut } from "@revolt/common/lib/createIsTimedOut";
+import { useInstance } from "@revolt/instance";
+import { createKeybind, Keybind, KeybindAction } from "@revolt/keybinds";
 import { useModals } from "@revolt/modal";
 import { useState } from "@revolt/state";
 import {
@@ -26,15 +23,13 @@ import {
   FileCarousel,
   FileDropAnywhereCollector,
   FilePasteCollector,
+  humanFileSize,
   IconButton,
   MessageBox,
   MessageReplyPreview,
-  Tooltip,
-  humanFileSize,
 } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 import { useSearchSpace } from "@revolt/ui/components/utils/autoComplete";
-import { UserSlowmodes } from "stoat.js/lib/events/v1";
 
 interface Props {
   /**
@@ -55,72 +50,12 @@ export function MessageComposition(props: Props) {
   const state = useState();
   const { t } = useLingui();
   const client = useClient();
+  const { limits } = useInstance();
   const { openModal } = useModals();
 
-  const currentSlowmode = (): UserSlowmodes | undefined => {
-    return client().userSlowmodes.get(props.channel.id);
-  };
-  const countdownForEntry = createMemo(() => {
-    const entry = currentSlowmode();
-    if (!entry) return;
-    const receivedAt = entry.receivedAt ?? Date.now();
-    // Add 100 ms here so the countdown has a bit to render
-    const targetTs = receivedAt + 100 + entry.retry_after * 1000;
-    return createCountdownFromNow(targetTs);
-  });
-
-  const isSlowmodeExempt = (): boolean => {
-    return props.channel.havePermission("BypassSlowmode");
-  };
-
-  const cooldownRemaining = createMemo(() => {
-    if (!props.channel.slowmode || isSlowmodeExempt()) return 0;
-
-    const cd = countdownForEntry();
-    if (!cd) return 0;
-
-    const [store] = cd;
-
-    const h = store.hours ?? 0;
-    const m = store.minutes ?? 0;
-    const s = store.seconds ?? 0;
-
-    const totalSeconds = h * 3600 + m * 60 + s;
-    return totalSeconds > 0 ? totalSeconds : 0;
-  });
-
-  const slowmodeText = createMemo(() => {
-    const s = cooldownRemaining();
-    if (!s) return "";
-
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-
-    if (h > 0) {
-      return `${h}:${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
-    }
-    return `${m}:${sec.toString().padStart(2, "0")}`;
-  });
-
-  const slowmodeWaitTime = createMemo(() => {
-    const s = props.channel.slowmode;
-    if (!s) return "";
-    const h = Math.floor(s / 3600);
-    const m = Math.floor((s % 3600) / 60);
-    const sec = s % 60;
-
-    if (h > 0 && m === 0 && sec === 0)
-      return h === 1 ? t`1 hour` : t`${h} hours`;
-    if (m > 0 && sec === 0 && h === 0)
-      return m === 1 ? t`1 minute` : t`${m} minutes`;
-
-    const parts = [];
-    if (h > 0) parts.push(h === 1 ? t`1 hour` : t`${h} hours`);
-    if (m > 0) parts.push(m === 1 ? t`1 minute` : t`${m} minutes`);
-    if (sec > 0) parts.push(sec === 1 ? t`1 second` : t`${sec} seconds`);
-    return parts.join(" ");
-  });
+  const isTimedOut = createIsTimedOut(
+    () => props.channel.server?.member?.timeout,
+  );
 
   createKeybind(KeybindAction.CHAT_JUMP_END, () =>
     setNodeReplacement(["_focus"]),
@@ -139,17 +74,17 @@ export function MessageComposition(props: Props) {
   }
 
   const messageLength = () => draft().content?.length ?? 0;
-
-  const maxMessageLength = () => {
-    const cl = client();
-    return cl.configured()
-      ? (cl.configuration?.features.limits.default.message_length ?? 2000)
-      : 2000;
-  };
-
+  const maxMessageLength = () => limits().message_length;
   const isAlmostTooLong = () => messageLength() > maxMessageLength() - 200;
-
   const wayTooLong = () => messageLength() > maxMessageLength() + 9999;
+
+  // Can the user upload files here?
+  const canUploadFiles = createMemo(() => {
+    return (
+      props.channel.havePermission("SendMessage") &&
+      props.channel.havePermission("UploadFiles")
+    );
+  });
 
   // Whether the send button should be active/clickable
   const canSend = createMemo(() => {
@@ -158,12 +93,13 @@ export function MessageComposition(props: Props) {
 
     const tooLong = messageLength() > maxMessageLength();
 
-    const isSlowmode = currentSlowmode();
+    const isSlowmode = props.channel.userSlowmode();
 
     return (
       !tooLong &&
       (draftContent.trim().length > 0 || draftFiles.length > 0) &&
-      !isSlowmode
+      !isSlowmode &&
+      !isTimedOut()
     );
   });
 
@@ -253,7 +189,7 @@ export function MessageComposition(props: Props) {
   async function sendMessage(useContent?: unknown) {
     if (!canSend() && typeof useContent !== "string") {
       return;
-    } else if (currentSlowmode()) {
+    } else if (props.channel.userSlowmode()) {
       return;
     }
     stopTyping();
@@ -291,13 +227,10 @@ export function MessageComposition(props: Props) {
    * @param files List of files
    */
   function onFiles(files: File[]) {
+    if (!canUploadFiles()) return;
     const rejectedFiles: File[] = [];
     const validFiles: File[] = [];
-
-    const maxSize = client().configured()
-      ? (client().configuration?.features.limits.default.file_upload_size_limits
-          .attachments ?? CONFIGURATION.MAX_FILE_SIZE)
-      : CONFIGURATION.MAX_FILE_SIZE;
+    const maxSize = limits().file_upload_size_limits.attachments;
 
     for (const file of files) {
       if (file.size > maxSize) {
@@ -343,6 +276,8 @@ export function MessageComposition(props: Props) {
    * Add a file to the message
    */
   function addFile() {
+    if (!canUploadFiles()) return;
+
     const input = document.createElement("input");
     input.accept = "*";
     input.type = "file";
@@ -375,28 +310,26 @@ export function MessageComposition(props: Props) {
     state.draft.removeFile(props.channel.id, fileId);
   }
 
+  /**
+   * Check if a file is marked as a spoiler
+   * @param fileId File ID
+   */
+  function isSpoiler(fileId: string) {
+    return state.draft.isFileSpoiler(fileId);
+  }
+
+  /**
+   * Toggle spoiler state for a file
+   * @param fileId File ID
+   */
+  function toggleSpoiler(fileId: string) {
+    state.draft.toggleFileSpoiler(fileId);
+  }
+
   const searchSpace = useSearchSpace(() => props.channel, client);
 
   return (
     <>
-      <Show when={props.channel.slowmode}>
-        <SlowmodeContainer>
-          <Tooltip
-            content={t`Members can send one message every ${slowmodeWaitTime()}.`}
-            placement="top"
-          >
-            <SlowmodeRow>
-              <Symbol style={{ "font-size": "1rem" }}>schedule</Symbol>
-              <SlowmodeText>
-                <Switch fallback={t`Slowmode is enabled.`}>
-                  <Match when={isSlowmodeExempt()}>{t`Slowmode Immune`}</Match>
-                  <Match when={cooldownRemaining() > 0}>{slowmodeText()}</Match>
-                </Switch>
-              </SlowmodeText>
-            </SlowmodeRow>
-          </Tooltip>
-        </SlowmodeContainer>
-      </Show>
       <Show when={state.draft.hasAdditionalElements(props.channel.id)}>
         <Keybind
           keybind={KeybindAction.CHAT_REMOVE_COMPOSITION_ELEMENT}
@@ -408,6 +341,8 @@ export function MessageComposition(props: Props) {
         getFile={state.draft.getFile}
         addFile={addFile}
         removeFile={removeFile}
+        isSpoiler={isSpoiler}
+        toggleSpoiler={toggleSpoiler}
       />
       <For each={draft().replies ?? []}>
         {(reply) => {
@@ -474,11 +409,15 @@ export function MessageComposition(props: Props) {
               <CompositionMediaPicker
                 onMessage={sendMessage}
                 onTextReplacement={(text) => setNodeReplacement([text])}
-                server={props.channel.server}
+                channel={props.channel}
               >
                 {(triggerProps) => (
                   <>
-                    <Show when={!canSend()}>
+                    <Show
+                      when={
+                        !canSend() && props.channel.havePermission("SendEmbeds")
+                      }
+                    >
                       <MessageBox.InlineIcon>
                         <IconButton onPress={triggerProps.onClickGif}>
                           <Symbol>gif</Symbol>
@@ -487,7 +426,7 @@ export function MessageComposition(props: Props) {
                     </Show>
                     <MessageBox.InlineIcon>
                       <IconButton onPress={triggerProps.onClickEmoji}>
-                        <Symbol>emoticon</Symbol>
+                        <Symbol>mood</Symbol>
                       </IconButton>
                     </MessageBox.InlineIcon>
                     <div ref={triggerProps.ref} />
@@ -504,7 +443,10 @@ export function MessageComposition(props: Props) {
               ? t`Message ${props.channel.recipient?.username}`
               : t`Message ${props.channel.name}`
         }
-        sendingAllowed={props.channel.havePermission("SendMessage")}
+        sendingAllowed={
+          props.channel.havePermission("SendMessage") && !isTimedOut()
+        }
+        timeoutActive={isTimedOut()}
         autoCompleteSearchSpace={searchSpace}
         updateDraftSelection={(start, end) =>
           state.draft.setSelection(props.channel.id, start, end)
@@ -527,31 +469,10 @@ export function MessageComposition(props: Props) {
           </Show>
         }
       />
-      <FilePasteCollector onFiles={onFiles} />
-      <FileDropAnywhereCollector onFiles={onFiles} />
+      <Show when={canUploadFiles()}>
+        <FilePasteCollector onFiles={onFiles} />
+        <FileDropAnywhereCollector onFiles={onFiles} />
+      </Show>
     </>
   );
 }
-
-const SlowmodeContainer = styled("div", {
-  base: {
-    display: "flex",
-    justifyContent: "flex-end",
-    padding: "0 12px 6px 0",
-  },
-});
-
-const SlowmodeRow = styled("div", {
-  base: {
-    display: "flex",
-    alignItems: "center",
-    gap: "var(--gap-sm)",
-  },
-});
-
-const SlowmodeText = styled("span", {
-  base: {
-    fontSize: "0.75rem",
-    fontWeight: "600",
-  },
-});

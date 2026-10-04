@@ -1,11 +1,11 @@
 import { createFormControl, createFormGroup } from "solid-forms";
 import { For, Show, createEffect, on } from "solid-js";
 
-import { Trans, useLingui } from "@lingui-solid/solid/macro";
+import { Trans, useLingui } from "@lingui/solid/macro";
 import type { API } from "stoat.js";
 
 import { useClient } from "@revolt/client";
-import { CONFIGURATION } from "@revolt/common";
+import { useInstance } from "@revolt/instance";
 import {
   CircularProgress,
   Column,
@@ -15,6 +15,8 @@ import {
   Text,
 } from "@revolt/ui";
 
+import { useModals } from "@revolt/modal";
+import { cropProcess } from "@revolt/modal/modals/CropProcess";
 import { ServerSettingsProps } from "../ServerSettings";
 
 /**
@@ -23,6 +25,8 @@ import { ServerSettingsProps } from "../ServerSettings";
 export default function ServerOverview(props: ServerSettingsProps) {
   const { t } = useLingui();
   const client = useClient();
+  const instance = useInstance();
+  const { openModal } = useModals();
 
   /* eslint-disable solid/reactivity */
   const editGroup = createFormGroup({
@@ -144,7 +148,7 @@ export default function ServerOverview(props: ServerSettingsProps) {
         changes.icon = await client().uploadFile(
           "icons",
           editGroup.controls.icon.value[0],
-          CONFIGURATION.DEFAULT_MEDIA_URL,
+          instance.mediaUrl,
         );
       }
     }
@@ -156,7 +160,7 @@ export default function ServerOverview(props: ServerSettingsProps) {
         changes.banner = await client().uploadFile(
           "banners",
           editGroup.controls.banner.value[0],
-          CONFIGURATION.DEFAULT_MEDIA_URL,
+          instance.mediaUrl,
         );
       }
     }
@@ -223,6 +227,15 @@ export default function ServerOverview(props: ServerSettingsProps) {
             accept="image/*"
             label={t`Server Icon`}
             imageJustify={false}
+            maxSize={instance.limits().file_upload_size_limits["icons"]}
+            process={cropProcess({
+              ratio: 1,
+              ratioLabel: t`Square`,
+              openModal,
+              circularMask: true,
+              allowModeToggle: false,
+              dialogTitle: t`Crop Server Icon`,
+            })}
           />
           <Form2.FileInput
             control={editGroup.controls.banner}
@@ -231,6 +244,14 @@ export default function ServerOverview(props: ServerSettingsProps) {
             imageAspect="232/100"
             imageRounded={false}
             imageJustify={false}
+            maxSize={instance.limits().file_upload_size_limits["banners"]}
+            process={cropProcess({
+              ratio: 232 / 100,
+              ratioLabel: t`Banner`,
+              openModal,
+              allowModeToggle: false,
+              dialogTitle: t`Crop Server Banner`,
+            })}
           />
           <Form2.TextField
             minlength={1}

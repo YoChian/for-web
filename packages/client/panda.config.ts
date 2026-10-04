@@ -73,6 +73,26 @@ export default defineConfig({
             backgroundPosition: "-200% 0",
           },
         },
+        authHintIn: {
+          "0%": {
+            opacity: 0,
+            transform: "translateY(4px)",
+          },
+          "100%": {
+            opacity: 1,
+            transform: "translateY(0)",
+          },
+        },
+        authDotIn: {
+          "0%": {
+            opacity: 0,
+            transform: "translateY(8px)",
+          },
+          "100%": {
+            opacity: 1,
+            transform: "translateY(0)",
+          },
+        },
       },
     },
   },
@@ -83,6 +103,6 @@ export default defineConfig({
   // Enable jsx code gen
   jsxFramework: "solid",
 
-  // Use template style
-  // syntax: "template-literal",
+  hash: true,
+  minify: true,
 });

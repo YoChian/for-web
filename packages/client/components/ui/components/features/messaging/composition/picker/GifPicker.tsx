@@ -5,17 +5,19 @@ import {
   Suspense,
   Switch,
   createContext,
+  createEffect,
   createMemo,
   createSignal,
   useContext,
 } from "solid-js";
 
-import { Trans } from "@lingui-solid/solid/macro";
+import { Trans } from "@lingui/solid/macro";
 import { useQuery } from "@tanstack/solid-query";
 import { styled } from "styled-system/jsx";
 
 import { useClient } from "@revolt/client";
-import env from "@revolt/common/lib/env";
+import { debounce, useDevice } from "@revolt/common";
+import { useInstance } from "@revolt/instance";
 import { useState } from "@revolt/state";
 import {
   Button,
@@ -54,9 +56,20 @@ type GifResult = {
 const FilterContext = createContext<(value: string) => void>();
 
 export function GifPicker() {
+  const { isMobile } = useDevice();
   const [filter, setFilter] = createSignal("");
+  const [debouncedFilter, setDebouncedFilter] = createSignal("");
 
-  const fliterLowercase = () => filter().toLowerCase();
+  const clearFilter = () => {
+    setFilter("");
+    setDebouncedFilter("");
+  };
+  const delayedSetFilter = debounce(setDebouncedFilter, 250);
+  createEffect(() => {
+    delayedSetFilter(filter());
+  });
+
+  const debouncedFilterLowercase = () => debouncedFilter().toLowerCase();
 
   return (
     <Stack>
@@ -73,23 +86,18 @@ export function GifPicker() {
             <IconButton
               variant="standard"
               aria-label="Back to categories"
-              onPress={() => setFilter("")}
+              onPress={clearFilter}
             >
               <Symbol>arrow_back</Symbol>
             </IconButton>
           </span>
         </Show>
         <TextField
-          autoFocus
+          autoFocus={!isMobile}
           variant="outlined"
           placeholder="Search for GIFs..."
           value={filter()}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
-          }}
-          onChange={(e) => setFilter(e.currentTarget.value)}
+          onInput={(e) => setFilter(e.currentTarget.value)}
         />
       </SearchArea>
       <Suspense fallback={<Loader />}>
@@ -100,8 +108,8 @@ export function GifPicker() {
             </FilterContext.Provider>
           }
         >
-          <Match when={fliterLowercase()}>
-            <GifSearch query={fliterLowercase()} />
+          <Match when={debouncedFilterLowercase()}>
+            <GifSearch query={debouncedFilterLowercase()} />
           </Match>
         </Switch>
       </Suspense>
@@ -323,6 +331,7 @@ type CategoryItem =
 
 function Categories() {
   const client = useClient();
+  const instance = useInstance();
 
   const setFilter = useContext(FilterContext);
 
@@ -331,7 +340,7 @@ function Categories() {
     queryFn: () => {
       const [authHeader, authHeaderValue] = client()!.authenticationHeader;
 
-      return fetch(`${env.DEFAULT_GIFBOX_URL}/categories?locale=en_US`, {
+      return fetch(`${instance.gifboxUrl}/categories?locale=en_US`, {
         headers: {
           [authHeader]: authHeaderValue,
         },
@@ -441,6 +450,7 @@ const Label = styled("span", {
 
 function GifSearch(props: { query: string }) {
   const client = useClient();
+  const instance = useInstance();
 
   const { onMessage } = useContext(CompositionMediaPickerContext);
 
@@ -450,7 +460,7 @@ function GifSearch(props: { query: string }) {
       const [authHeader, authHeaderValue] = client()!.authenticationHeader;
 
       return fetch(
-        `${env.DEFAULT_GIFBOX_URL}/` +
+        `${instance.gifboxUrl}/` +
           (props.query === "trending"
             ? `trending?locale=en_US`
             : `search?locale=en_US&query=${encodeURIComponent(props.query)}`),
